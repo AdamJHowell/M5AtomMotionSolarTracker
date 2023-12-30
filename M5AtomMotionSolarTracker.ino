@@ -2,6 +2,7 @@
 ATOM Motion:
     SCL 21
     SDA 25
+    PORT.A (onboard), 32 White/SCL, 26 Yellow/SDA
     PORT.B (black connector), 23 white, 33 yellow
     PORT.C (blue connector), 19 yellow, 22 white
 Servo angle range 0 ~ 180
@@ -13,107 +14,44 @@ APDS-9960 default address: 0x39
 */
 
 
-/**
-I2CBusScanner will scan the I2C bus for device addresses in the range of 0x08 to 0x77.
-Using the default SDA and SCL GPIOs.
-Addresses with a device will be represented by '#'.
-Addresses without a device will be represented by '-'.
-Addresses which return an error will be represented by 'E'.
-    0123456789ABCDEF
-0x0         --------
-0x1 ----------------
-0x2 ----------------
-0x3 ---------#------
-0x4 ----#---#-------
-0x5 ----------------
-0x6 ----------------
-0x7 --------
-
-3 devices found.
-Address: 0x39
-Address: 0x44
-Address: 0x48
-
-Scan # 12 complete.
-Pausing for 5 seconds.
-*/
-
-
 #include "M5AtomMotionSolarTracker.h"
 
 
-void pcaSelect( uint8_t i )
+void channelSelect( uint8_t i )
 {
 	if( i > 7 )
 		return;
 	Wire.beginTransmission( PCA_ADDRESS );
 	Wire.write( 1 << i );
-	Wire.endTransmission();
-} // End of pcaSelect()
-
-
-void GetStatus()
-{
-	for( int ch = 1; ch < 5; ch++ )
-		Serial.printf( "Servo Channel %d: %d \n", ch, atomMotion.ReadServoAngle( ch ) );
-	Serial.printf( "Motor Channel %d: %d \n", 1, atomMotion.ReadMotorSpeed( 1 ) );
-	Serial.printf( "Motor Channel %d: %d \n", 2, atomMotion.ReadMotorSpeed( 2 ) );
-} // End of GetStatus()
-
-
-void TaskMotion( void *pvParameters )
-{
-	while( 1 )
-	{
-		for( int ch = 1; ch < 5; ch++ )
-			atomMotion.SetServoAngle( ch, 180 );
-		GetStatus();
-		vTaskDelay( 1000 / portTICK_RATE_MS );
-		for( int ch = 1; ch < 5; ch++ )
-			atomMotion.SetServoAngle( ch, 0 );
-		GetStatus();
-		vTaskDelay( 1000 / portTICK_RATE_MS );
-		if( direction )
-		{
-			atomMotion.SetMotorSpeed( 1, 100 );
-			atomMotion.SetMotorSpeed( 2, 100 );
-			M5.dis.drawpix( 0, RED );
-		}
-		else
-		{
-			atomMotion.SetMotorSpeed( 1, -100 );
-			atomMotion.SetMotorSpeed( 2, -100 );
-			M5.dis.drawpix( 0, BLUE );
-		}
-	}
-} // End of TaskMotion()
+   Wire.endTransmission();
+} // End of channelSelect()
 
 
 void setup()
 {
+   // SerialEnable, I2CEnable, DisplayEnable
 	M5.begin( true, false, true );
+	// Wire.begin() must happen before atomMotion.Init().
+	Wire.begin( sdaGPIO, sclGPIO );
+	// Wire.begin() must happen before atomMotion.Init().
 	atomMotion.Init();
-	vSemaphoreCreateBinary( CtlSemaphore );
-	xTaskCreatePinnedToCore(
-		 TaskMotion,	// Pointer to the task entry function.
-		 "TaskMotion", // A descriptive name for the task.
-		 4096,			// The size of the task stack specified as the number of bytes.
-		 NULL,			// Pointer that will be used as the parameter for the task being created.
-		 2,				// Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-		 NULL,			// Used to pass back a handle by which the created task can be referenced.
-		 0 );				// Values 0 or 1 indicate the index number of the CPU which the task should be pinned to.
+
+   delay( 500 );
+   Serial.println( "\nBeginning setup()." );
+
 	pinMode( PORT_B, INPUT_PULLUP );
 	pinMode( PORT_C, INPUT_PULLUP );
 	M5.dis.drawpix( 0, WHITE );
 
-	Wire.begin( sdaGPIO, sclGPIO );
+   delay( 500 );
 	for( uint8_t i = 0; i < NUM_SENSORS; i++ )
 	{
-		pcaSelect( sensorAddresses[i] );
+		channelSelect( sensorAddresses[i] );
 		sensorArray[i].begin();
 		sensorArray[i].setMode( CONTINUOUSLY_H_RESOLUTION_MODE );
 	}
-	Serial.println( "\nI2C scanner and lux sensor are ready!" );
+   delay( 500 );
+	Serial.println( "\nFinished setup().\n" );
 } // End of setup()
 
 
@@ -121,15 +59,15 @@ void loop()
 {
    M5.update();
 
-	if( millis() - lastLoop >= loopDelay )
-	{
+   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
+   {
+      long ifLoop = millis();
 		if( M5.Btn.wasPressed() )
 		{
-			direction = !direction;
-			if( speed == 180 )
+			if( speed == 100 )
 				speed = 0;
 			else
-				speed = 180;
+				speed = 100;
 			Serial.printf( "New speed: %d\n", speed );
 			switch( buttonCount )
 			{
@@ -175,15 +113,19 @@ void loop()
 		}
 		else
 			atomMotion.SetServoAngle( 2, speed );
-		lastLoop = millis();
 
 		// Read all sensors before acting on the values.
 		for( uint8_t i = 0; i < NUM_SENSORS; i++ )
 		{
-			pcaSelect( sensorAddresses[i] );
+			channelSelect( sensorAddresses[i] );
 			luxValues[i] = sensorArray[i].getLUX();
 		}
 		// Print values in a format the Arduino Serial Plotter can use.
-		Serial.printf( "L0:%d L1:%d L4:%d L5:%d\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3] );
+		if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
+		{
+         Serial.printf( "L0:%d L1:%d L4:%d L5:%d\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3] );
+         lastPrintLoop = millis();
+      }
+		lastLoop = millis();
 	}
 } // End of loop()
