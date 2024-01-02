@@ -25,8 +25,6 @@
 
 
 AtomMotion                         atomMotion;                                   // An object to manage the ATOM Motion.
-bool                               direction       = true;                       // Tracks the direction of each servo.
-int                                speed           = 30;                         // Stores the speed of the continuous rotation servos.
 unsigned int                       buttonCount     = 0;                          // Tracks the number of times the ATOM button was pressed.
 unsigned long                      lastLoop        = 0;                          // Tracks the last time the main loop executed.
 unsigned long                      lastPrintLoop   = 0;                          // Tracks the last time the print loop executed.
