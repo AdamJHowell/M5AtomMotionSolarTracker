@@ -60,6 +60,7 @@ void setup()
 
 void loop()
 {
+   // M5.update() seems to only call M5.Btn.read();
    M5.update();
 
    // Read all sensors before acting on the values.
@@ -137,7 +138,7 @@ void loop()
       // Print values in a format the Arduino Serial Plotter can use.
       if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
       {
-         Serial.printf( "L0:%d L1:%d L4:%d L5:%d servo2speed:%du servo4speed:%du\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], servo2speed, servo4speed );
+         Serial.printf( "L0:%d L1:%d L4:%d L5:%d servo2speed:%u servo4speed:%u\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], servo2speed, servo4speed );
          lastPrintLoop = millis();
       }
       lastLoop = millis();

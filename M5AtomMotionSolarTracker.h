@@ -33,6 +33,7 @@ unsigned long                      lastLoop        = 0;                         
 unsigned long                      lastPrintLoop   = 0;                          // Tracks the last time the print loop executed.
 unsigned long                      ledColor        = 0xFFFFFF;                   // Tracks the color of the onboard LED.
 const unsigned int                 NUM_SENSORS     = 4;                          // The number of sensors.
+const unsigned long                debounce        = 80;                        // How many milliseconds to wait before considering a button to have been pressed twice.
 const unsigned long                loopDelay       = 10;                         // The maximum value of 4,294,967,295 allows for a delay of about 49.7 days.
 const unsigned long                printLoopDelay  = 1000;                       // The minimum time between serial printing of the lux values.
 const byte                         sdaGPIO         = 26;                         // Use this to set the SDA GPIO if your board uses a non-standard GPIOs for the I2C bus.
