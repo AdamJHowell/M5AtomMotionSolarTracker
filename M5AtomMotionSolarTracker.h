@@ -1,6 +1,7 @@
 #ifndef ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
 #define ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
 
+
 #include <Wire.h>
 #include <M5Atom.h>
 #include <M5_DLight.h>
