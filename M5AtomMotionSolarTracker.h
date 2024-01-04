@@ -27,8 +27,11 @@
 
 AtomMotion                         atomMotion;                                   // An object to manage the ATOM Motion.
 unsigned int                       buttonCount     = 0;                          // Tracks the number of times the ATOM button was pressed.
+unsigned int                       servo2speed     = 90;                         // 0 = full reverse, 90 = stationary, 180 = full forward.
+unsigned int                       servo4speed     = 90;                         // 0 = full reverse, 90 = stationary, 180 = full forward.
 unsigned long                      lastLoop        = 0;                          // Tracks the last time the main loop executed.
 unsigned long                      lastPrintLoop   = 0;                          // Tracks the last time the print loop executed.
+unsigned long                      ledColor        = 0xFFFFFF;                   // Tracks the color of the onboard LED.
 const unsigned int                 NUM_SENSORS     = 4;                          // The number of sensors.
 const unsigned long                loopDelay       = 10;                         // The maximum value of 4,294,967,295 allows for a delay of about 49.7 days.
 const unsigned long                printLoopDelay  = 1000;                       // The minimum time between serial printing of the lux values.

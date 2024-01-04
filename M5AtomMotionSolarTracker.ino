@@ -13,6 +13,9 @@ SHT40 default address: 0x44
 APDS-9960 default address: 0x39
 */
 
+/*
+The M5 ATOM seems to use this button library: https://docs.m5stack.com/en/api/atom/button
+*/
 
 #include "M5AtomMotionSolarTracker.h"
 
@@ -31,19 +34,18 @@ void setup()
 {
    // SerialEnable, I2CEnable, DisplayEnable
    M5.begin( true, false, true );
+   Serial.println( "\nBeginning setup()." );
+   M5.dis.drawpix( 0, VIOLET );
    // Wire.begin() must happen before atomMotion.Init().
    Wire.begin( sdaGPIO, sclGPIO );
    // Wire.begin() must happen before atomMotion.Init().
    atomMotion.Init();
 
-   delay( 500 );
-   Serial.println( "\nBeginning setup()." );
-
    pinMode( PORT_B, INPUT_PULLUP );
    pinMode( PORT_C, INPUT_PULLUP );
-   M5.dis.drawpix( 0, WHITE );
 
    delay( 500 );
+   M5.dis.drawpix( 0, WHITE );
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
       channelSelect( sensorAddresses[i] );
@@ -51,6 +53,7 @@ void setup()
       sensorArray[i].setMode( CONTINUOUSLY_H_RESOLUTION_MODE );
    }
    delay( 500 );
+   M5.dis.drawpix( 0, GREEN );
    Serial.println( "\nFinished setup().\n" );
 } // End of setup()
 
@@ -59,83 +62,87 @@ void loop()
 {
    M5.update();
 
-   if(( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
+   // Read all sensors before acting on the values.
+   for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
-      long ifLoop = millis();
-      if( M5.Btn.wasPressed())
+      channelSelect( sensorAddresses[i] );
+      luxValues[i] = sensorArray[i].getLUX();
+   }
+
+   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
+   {
+      if( M5.Btn.lastChange() > lastLoop )
       {
-         if( speed == 100 )
-         {
-            speed = 0;
-         }
-         else
-         {
-            speed = 100;
-         }
-         Serial.printf( "New speed: %d\n", speed );
+         buttonCount++;
+         Serial.printf( "  Button press!\n" );
+         if( buttonCount > 9 )
+            buttonCount = 0;
          switch( buttonCount )
          {
             case 0:
-               M5.dis.drawpix( 0, RED );
+               ledColor = RED;
                break;
             case 1:
-               M5.dis.drawpix( 0, ORANGE );
+               ledColor = ORANGE;
                break;
             case 2:
-               M5.dis.drawpix( 0, YELLOW );
+               ledColor = YELLOW;
                break;
             case 3:
-               M5.dis.drawpix( 0, GREEN );
+               ledColor = GREEN;
                break;
             case 4:
-               M5.dis.drawpix( 0, BLUE );
+               ledColor = BLUE;
                break;
             case 5:
-               M5.dis.drawpix( 0, INDIGO );
+               ledColor = INDIGO;
                break;
             case 6:
-               M5.dis.drawpix( 0, VIOLET );
+               ledColor = VIOLET;
+               break;
+            case 7:
+               ledColor = MAGENTA;
+               break;
+            case 8:
+               ledColor = CYAN;
+               break;
+            case 9:
+               ledColor = BLACK;
                break;
             default:
                break;
          }
-         buttonCount++;
-         if( buttonCount >= 7 )
-         {
-            buttonCount = 0;
-         }
       }
-      if( !digitalRead( PORT_B ))
+      if( !digitalRead( PORT_B ) )
       {
-         atomMotion.SetServoAngle( 4, 90 );
+         servo4speed = 90;
+         ledColor = RED;
          Serial.printf( "Hit limit B!\n" );
       }
       else
       {
-         atomMotion.SetServoAngle( 4, speed );
+         servo4speed = buttonCount * 10;
       }
-      if( !digitalRead( PORT_C ))
+      if( !digitalRead( PORT_C ) )
       {
-         atomMotion.SetServoAngle( 2, 90 );
+         servo2speed = 90;
+         ledColor = BLUE;
          Serial.printf( "Hit limit C!\n" );
       }
       else
       {
-         atomMotion.SetServoAngle( 2, speed );
+         servo2speed = buttonCount * 10;
       }
 
-      // Read all sensors before acting on the values.
-      for( uint8_t i = 0; i < NUM_SENSORS; i++ )
-      {
-         channelSelect( sensorAddresses[i] );
-         luxValues[i] = sensorArray[i].getLUX();
-      }
       // Print values in a format the Arduino Serial Plotter can use.
       if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
       {
-         Serial.printf( "L0:%d L1:%d L4:%d L5:%d\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3] );
+         Serial.printf( "L0:%d L1:%d L4:%d L5:%d servo2speed:%du servo4speed:%du\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], servo2speed, servo4speed );
          lastPrintLoop = millis();
       }
       lastLoop = millis();
    }
+   atomMotion.SetServoAngle( 2, servo2speed );
+   atomMotion.SetServoAngle( 4, servo4speed );
+   M5.dis.drawpix( 0, ledColor );
 } // End of loop()
