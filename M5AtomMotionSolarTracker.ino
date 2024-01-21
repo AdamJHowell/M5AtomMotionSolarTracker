@@ -13,6 +13,8 @@ APDS-9960 default address: 0x39
 Uses 4 M5Stack DLight sensors on I2C address 0x23: https://github.com/m5stack/M5-DLight, https://docs.m5stack.com/en/unit/dlight
 Values from 1-65535.
 M5Stack Dlight sensor returns greater values for brighter light.
+ATOM Motion servo:
+   Servo(1~4)   angle: 0-180   pulse: 500-2500   R/W
 */
 
 /*
@@ -62,6 +64,9 @@ void setup()
 
 void loop()
 {
+   int altitudeSpeed = 1500;				  // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   int azimuthSpeed = 1500;				  // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+
    // M5.update() seems to only call M5.Btn.read();
    M5.update();
 
@@ -80,16 +85,14 @@ void loop()
    // Sum the right sensors.
    uint16_t rightSide = luxValues[1] + luxValues[3];
 
-   // ToDo: If the down stop is not tripped:
-   //   If the bottom row is brighter than the top row, move down.
-   // ToDo: If the left row is brighter than the right row, move left.
-   // ToDo: If the right row is brighter than the left row, move right.
-
+   altitudeSpeed = map( topRow - bottomRow, -65535, 65535, SERVO_MIN, SERVO_MAX );
+   azimuthSpeed = map( leftSide - rightSide, -65535, 65535, SERVO_MIN, SERVO_MAX );
    // ToDo: If the up stop is not tripped:
    //   If the top row is brighter than the bottom row, move up.
    if( digitalRead( PORT_B ) )
    {
       servo4speed = buttonCount * 10;
+      altitudeSpeed = 1500;
    }
    else
    {
@@ -97,7 +100,9 @@ void loop()
       ledColor = RED;
       Serial.printf( "Hit limit B!\n" );
    }
-   if( !digitalRead( PORT_C ) )
+   // ToDo: If the down stop is not tripped:
+   //   If the bottom row is brighter than the top row, move down.
+   if( digitalRead( PORT_C ) )
    {
       servo2speed = 90;
       ledColor = BLUE;
@@ -106,6 +111,13 @@ void loop()
    else
    {
       servo2speed = buttonCount * 10;
+   }
+
+   // Only move if the L/R delta is greater than the dead-band setting.
+   if( abs( leftSide - rightSide ) > DEAD_BAND )
+   {
+      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
+      atomMotion.SetServoAngle( 1, azimuthSpeed );
    }
 
    if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
@@ -161,7 +173,7 @@ void loop()
       }
       lastLoop = millis();
    }
-   atomMotion.SetServoAngle( 2, servo2speed );
-   atomMotion.SetServoAngle( 4, servo4speed );
+//   atomMotion.SetServoAngle( 2, servo2speed );
+//   atomMotion.SetServoAngle( 4, servo4speed );
    M5.dis.drawpix( 0, ledColor );
 } // End of loop()
