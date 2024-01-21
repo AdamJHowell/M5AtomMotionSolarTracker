@@ -41,7 +41,7 @@ const byte                         sclGPIO         = 32;                        
 const int                          PCA_ADDRESS     = 0x70;                       // The I2C address of the Pa.HUB.
 std::array<M5_DLight, NUM_SENSORS> sensorArray     = {};                         // An array of DLIGHT sensor objects.
 std::array<uint16_t, NUM_SENSORS>  sensorAddresses = { 0, 1, 4, 5 };             // An array of the Pa.HUB ports with DLIGHT sensors attached.
-std::array<uint16_t, NUM_SENSORS>  luxValues       = { 2112, 2112, 2112, 2112 }; // An array of light readings, one per sensor.
+std::array<uint16_t, NUM_SENSORS>  luxValues       = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
 
 
 void channelSelect( uint8_t i );

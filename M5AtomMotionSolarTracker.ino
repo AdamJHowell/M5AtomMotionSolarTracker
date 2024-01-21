@@ -9,8 +9,10 @@ Servo angle range 0 ~ 180
 DC motor speed range -127~127
 ATOM Lite HY2.0-4P:
     G, 5V, G26, G32
-SHT40 default address: 0x44
 APDS-9960 default address: 0x39
+Uses 4 M5Stack DLight sensors on I2C address 0x23: https://github.com/m5stack/M5-DLight, https://docs.m5stack.com/en/unit/dlight
+Values from 1-65535.
+M5Stack Dlight sensor returns greater values for brighter light.
 */
 
 /*
@@ -63,11 +65,47 @@ void loop()
    // M5.update() seems to only call M5.Btn.read();
    M5.update();
 
-   // Read all sensors before acting on the values.
+   // Read the light sensors.
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
       channelSelect( sensorAddresses[i] );
       luxValues[i] = sensorArray[i].getLUX();
+   }
+   // Sum the top sensors.
+   uint16_t topRow = luxValues[0] + luxValues[1];
+   // Sum the bottom sensors.
+   uint16_t bottomRow = luxValues[2] + luxValues[3];
+   // Sum the left sensors.
+   uint16_t leftSide = luxValues[0] + luxValues[2];
+   // Sum the right sensors.
+   uint16_t rightSide = luxValues[1] + luxValues[3];
+
+   // ToDo: If the down stop is not tripped:
+   //   If the bottom row is brighter than the top row, move down.
+   // ToDo: If the left row is brighter than the right row, move left.
+   // ToDo: If the right row is brighter than the left row, move right.
+
+   // ToDo: If the up stop is not tripped:
+   //   If the top row is brighter than the bottom row, move up.
+   if( digitalRead( PORT_B ) )
+   {
+      servo4speed = buttonCount * 10;
+   }
+   else
+   {
+      servo4speed = 90;
+      ledColor = RED;
+      Serial.printf( "Hit limit B!\n" );
+   }
+   if( !digitalRead( PORT_C ) )
+   {
+      servo2speed = 90;
+      ledColor = BLUE;
+      Serial.printf( "Hit limit C!\n" );
+   }
+   else
+   {
+      servo2speed = buttonCount * 10;
    }
 
    if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
@@ -113,26 +151,6 @@ void loop()
             default:
                break;
          }
-      }
-      if( !digitalRead( PORT_B ) )
-      {
-         servo4speed = 90;
-         ledColor = RED;
-         Serial.printf( "Hit limit B!\n" );
-      }
-      else
-      {
-         servo4speed = buttonCount * 10;
-      }
-      if( !digitalRead( PORT_C ) )
-      {
-         servo2speed = 90;
-         ledColor = BLUE;
-         Serial.printf( "Hit limit C!\n" );
-      }
-      else
-      {
-         servo2speed = buttonCount * 10;
       }
 
       // Print values in a format the Arduino Serial Plotter can use.
