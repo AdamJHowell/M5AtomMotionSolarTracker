@@ -27,8 +27,8 @@
 
 AtomMotion                         atomMotion;                                   // An object to manage the ATOM Motion.
 unsigned int                       buttonCount     = 0;                          // Tracks the number of times the ATOM button was pressed.
-unsigned int                       servo2speed     = 90;                         // 0 = full reverse, 90 = stationary, 180 = full forward.
-unsigned int                       servo4speed     = 90;                         // 0 = full reverse, 90 = stationary, 180 = full forward.
+unsigned int                       altitudeServo   = 1;                          // The ATOM Motion port that the altitude servo is plugged into.
+unsigned int                       azimuthServo    = 2;                          // The ATOM Motion port that the azimuth servo is plugged into.
 unsigned long                      lastLoop        = 0;                          // Tracks the last time the main loop executed.
 unsigned long                      lastPrintLoop   = 0;                          // Tracks the last time the print loop executed.
 unsigned long                      ledColor        = 0xFFFFFF;                   // Tracks the color of the onboard LED.

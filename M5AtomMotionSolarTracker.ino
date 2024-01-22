@@ -13,7 +13,12 @@ APDS-9960 default address: 0x39
 Uses 4 M5Stack DLight sensors on I2C address 0x23: https://github.com/m5stack/M5-DLight, https://docs.m5stack.com/en/unit/dlight
 Values from 1-65535.
 M5Stack Dlight sensor returns greater values for brighter light.
+ATOM Motion:
+   https://docs.m5stack.com/en/atom/atom_motion
+   https://github.com/m5stack/M5Atom/tree/master/examples/ATOM_BASE/ATOM_Motion
 ATOM Motion servo:
+   https://github.com/m5stack/M5Atom/blob/master/examples/ATOM_BASE/ATOM_Motion/AtomMotion.h
+   uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
    Servo(1~4)   angle: 0-180   pulse: 500-2500   R/W
 */
 
@@ -87,37 +92,35 @@ void loop()
 
    altitudeSpeed = map( topRow - bottomRow, -65535, 65535, SERVO_MIN, SERVO_MAX );
    azimuthSpeed = map( leftSide - rightSide, -65535, 65535, SERVO_MIN, SERVO_MAX );
-   // ToDo: If the up stop is not tripped:
+   // If the up stop is tripped:
    //   If the top row is brighter than the bottom row, move up.
-   if( digitalRead( PORT_B ) )
+   if( !digitalRead( PORT_B ) )
    {
-      servo4speed = buttonCount * 10;
       altitudeSpeed = 1500;
-   }
-   else
-   {
-      servo4speed = 90;
       ledColor = RED;
       Serial.printf( "Hit limit B!\n" );
    }
-   // ToDo: If the down stop is not tripped:
+   // If the down stop is tripped:
    //   If the bottom row is brighter than the top row, move down.
    if( digitalRead( PORT_C ) )
    {
-      servo2speed = 90;
+      altitudeSpeed = 1500;
       ledColor = BLUE;
       Serial.printf( "Hit limit C!\n" );
    }
-   else
+
+   // Only move if the up/down delta is greater than the dead-band setting.
+   if( abs( topRow - bottomRow ) > DEAD_BAND )
    {
-      servo2speed = buttonCount * 10;
+      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
+      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
    }
 
    // Only move if the L/R delta is greater than the dead-band setting.
    if( abs( leftSide - rightSide ) > DEAD_BAND )
    {
       // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
-      atomMotion.SetServoAngle( 1, azimuthSpeed );
+      atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
    }
 
    if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
@@ -168,12 +171,10 @@ void loop()
       // Print values in a format the Arduino Serial Plotter can use.
       if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
       {
-         Serial.printf( "L0:%d L1:%d L4:%d L5:%d servo2speed:%u servo4speed:%u\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], servo2speed, servo4speed );
+         Serial.printf( "L0:%d L1:%d L4:%d L5:%d azimuthSpeed:%u altitudeSpeed:%u\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], azimuthSpeed, altitudeSpeed );
          lastPrintLoop = millis();
       }
       lastLoop = millis();
    }
-//   atomMotion.SetServoAngle( 2, servo2speed );
-//   atomMotion.SetServoAngle( 4, servo4speed );
    M5.dis.drawpix( 0, ledColor );
 } // End of loop()
