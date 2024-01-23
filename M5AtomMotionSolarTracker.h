@@ -46,6 +46,7 @@ std::array<M5_DLight, NUM_SENSORS> sensorArray     = {};                        
 std::array<uint16_t, NUM_SENSORS>  sensorAddresses = { 0, 1, 4, 5 };             // An array of the Pa.HUB ports with DLIGHT sensors attached.
 std::array<uint16_t, NUM_SENSORS>  luxValues       = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
 
+
 void channelSelect( uint8_t i );
 
 void setup();
