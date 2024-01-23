@@ -118,7 +118,10 @@ void loop()
    // Only move if the up/down delta is greater than the dead-band setting.
    if( abs( topRow - bottomRow ) > DEAD_BAND )
    {
-      Serial.printf( "Moving altitude servo.\n" );
+      if( topRow > bottomRow )
+         Serial.printf( "Moving altitude servo up.\n" );
+      else
+         Serial.printf( "Moving altitude servo down.\n" );
       // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
       atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
    }
@@ -126,7 +129,10 @@ void loop()
    // Only move if the L/R delta is greater than the dead-band setting.
    if( abs( leftSide - rightSide ) > DEAD_BAND )
    {
-      Serial.printf( "Moving azimuth servo.\n" );
+      if( leftSide > rightSide )
+         Serial.printf( "Moving azimuth servo left.\n" );
+      else
+         Serial.printf( "Moving azimuth servo right.\n" );
       // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
       atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
    }
