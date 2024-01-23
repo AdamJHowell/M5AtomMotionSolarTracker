@@ -69,8 +69,8 @@ void setup()
 
 void loop()
 {
-   int altitudeSpeed = 1500;				  // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
-   int azimuthSpeed = 1500;				  // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   long altitudeSpeed = 1500;				  // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   long azimuthSpeed = 1500;				  // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
 
    // M5.update() seems to only call M5.Btn.read();
    M5.update();
@@ -82,27 +82,33 @@ void loop()
       luxValues[i] = sensorArray[i].getLUX();
    }
    // Sum the top sensors.
-   uint16_t topRow = luxValues[0] + luxValues[1];
+   long topRow = luxValues[0] + luxValues[1];
    // Sum the bottom sensors.
-   uint16_t bottomRow = luxValues[2] + luxValues[3];
+   long bottomRow = luxValues[2] + luxValues[3];
    // Sum the left sensors.
-   uint16_t leftSide = luxValues[0] + luxValues[2];
+   long leftSide = luxValues[0] + luxValues[2];
    // Sum the right sensors.
-   uint16_t rightSide = luxValues[1] + luxValues[3];
+   long rightSide = luxValues[1] + luxValues[3];
 
-   altitudeSpeed = map( topRow - bottomRow, -65535, 65535, SERVO_MIN, SERVO_MAX );
-   azimuthSpeed = map( leftSide - rightSide, -65535, 65535, SERVO_MIN, SERVO_MAX );
-   // If the up stop is tripped:
+   long rowDelta = topRow - bottomRow;
+   long sideDelta = leftSide - rightSide;
+   long rowValue = constrain( rowDelta, -3000, 3000 );
+   long sideValue = constrain( sideDelta, -3000, 3000 );
+   // map( value, fromLow, fromHigh, toLow, toHigh );
+   altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+
+   // If the up stop is tripped, stop the servo.
    //   If the top row is brighter than the bottom row, move up.
    if( !digitalRead( PORT_B ) )
    {
       altitudeSpeed = 1500;
-      ledColor = RED;
+      ledColor = GREEN;
       Serial.printf( "Hit limit B!\n" );
    }
    // If the down stop is tripped:
    //   If the bottom row is brighter than the top row, move down.
-   if( digitalRead( PORT_C ) )
+   if( !digitalRead( PORT_C ) )
    {
       altitudeSpeed = 1500;
       ledColor = BLUE;
@@ -171,7 +177,13 @@ void loop()
       // Print values in a format the Arduino Serial Plotter can use.
       if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
       {
-         Serial.printf( "L0:%d L1:%d L4:%d L5:%d azimuthSpeed:%u altitudeSpeed:%u\n", luxValues[0], luxValues[1], luxValues[2], luxValues[3], azimuthSpeed, altitudeSpeed );
+         Serial.printf( "%d - %d = %d\n", luxValues[0], luxValues[1], topRow );
+         Serial.printf( "%d - %d = %d\n", luxValues[2], luxValues[3], bottomRow );
+         Serial.printf( "| - |\n" );
+         Serial.printf( "%d - %d\n", leftSide, rightSide );
+         Serial.printf( "azimuthSpeed:%u altitudeSpeed:%u\n", azimuthSpeed, altitudeSpeed );
+         Serial.printf( "top - bottom: %d\n", topRow - bottomRow );
+         Serial.printf( "left - right: %d\n\n", leftSide - rightSide );
          lastPrintLoop = millis();
       }
       lastLoop = millis();
