@@ -44,16 +44,13 @@ void setup()
    // SerialEnable, I2CEnable, DisplayEnable
    M5.begin( true, false, true );
    Serial.println( "\nBeginning setup()." );
-   M5.dis.drawpix( 0, VIOLET );
    // Wire.begin() must happen before atomMotion.Init().
-   Wire.begin( sdaGPIO, sclGPIO );
-   // Wire.begin() must happen before atomMotion.Init().
+//   Wire.begin( sdaGPIO, sclGPIO );
    atomMotion.Init();
 
    pinMode( PORT_B, INPUT_PULLUP );
    pinMode( PORT_C, INPUT_PULLUP );
 
-   delay( 500 );
    M5.dis.drawpix( 0, WHITE );
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
@@ -61,8 +58,6 @@ void setup()
       sensorArray[i].begin();
       sensorArray[i].setMode( CONTINUOUSLY_H_RESOLUTION_MODE );
    }
-   delay( 500 );
-   M5.dis.drawpix( 0, GREEN );
    Serial.println( "\nFinished setup().\n" );
 } // End of setup()
 
@@ -102,7 +97,9 @@ void loop()
    //   If the top row is brighter than the bottom row, move up.
    if( !digitalRead( PORT_B ) )
    {
-      altitudeSpeed = 1500;
+      altitudeSpeed = 2500;
+      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+      azimuthSpeed = 1500;
       ledColor = GREEN;
       Serial.printf( "Hit limit B!\n" );
    }
@@ -110,7 +107,9 @@ void loop()
    //   If the bottom row is brighter than the top row, move down.
    if( !digitalRead( PORT_C ) )
    {
-      altitudeSpeed = 1500;
+      altitudeSpeed = 500;
+      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+      azimuthSpeed = 1500;
       ledColor = BLUE;
       Serial.printf( "Hit limit C!\n" );
    }
@@ -183,7 +182,7 @@ void loop()
       }
 
       // Print values in a format the Arduino Serial Plotter can use.
-      if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
+      if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
       {
          Serial.printf( "%d - %d = %d\n", luxValues[0], luxValues[1], topRow );
          Serial.printf( "%d - %d = %d\n", luxValues[2], luxValues[3], bottomRow );
@@ -197,4 +196,11 @@ void loop()
       lastLoop = millis();
    }
    M5.dis.drawpix( 0, ledColor );
+   for( int x = 1; x < 5; x++ )
+   {
+//      atomMotion.SetServoPulse( x, 500 );
+      atomMotion.SetServoAngle( x, 45 );
+      Serial.printf( "Moving channel %d\n", x );
+      delay( 100 );
+   }
 } // End of loop()
