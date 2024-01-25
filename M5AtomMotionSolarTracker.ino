@@ -94,10 +94,8 @@ void loop()
    // Sum the right sensors.
    long rightSide = luxValues[1] + luxValues[3];
 
-   long rowDelta = topRow - bottomRow;
-   long sideDelta = leftSide - rightSide;
-   long rowValue = constrain( rowDelta, -3000, 3000 );
-   long sideValue = constrain( sideDelta, -3000, 3000 );
+   long rowValue = constrain( topRow - bottomRow, -3000, 3000 );
+   long sideValue = constrain( leftSide - rightSide, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
    altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
    azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
@@ -105,38 +103,28 @@ void loop()
    // If the up stop is tripped, prevent the servo from moving upward.
    if( !digitalRead( PORT_B ) )
    {
-      if( topRow > bottomRow )
-         altitudeSpeed = 1500;
-      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
-      azimuthSpeed = 1500;
+      // ToDo: Determine if this should be 500-1500 instead.
+      altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
       ledColor = GREEN;
-      Serial.printf( "-- Hit limit B!\n" );
+      Serial.printf( "-- Hit limit B up stop!\n" );
    }
 
    // If the down stop is tripped, prevent the servo from moving downward.
    if( !digitalRead( PORT_C ) )
    {
-      if( bottomRow > topRow )
-         altitudeSpeed = 1500;
-      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
-      azimuthSpeed = 1500;
+      // ToDo: Determine if this should be 1500-2500 instead.
+      altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
       ledColor = BLUE;
-      Serial.printf( "-- Hit limit C!\n" );
+      Serial.printf( "-- Hit limit C down stop!\n" );
    }
 
-   // Only move if the up/down delta is greater than the dead-band setting.
-   if( abs( topRow - bottomRow ) > DEAD_BAND )
-   {
-      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
-      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
-   }
+   // Don't move up or down if the up/down delta is less than the dead-band setting.
+   if( abs( topRow - bottomRow ) <= DEAD_BAND )
+      altitudeSpeed = 1500;
 
-   // Only move if the L/R delta is greater than the dead-band setting.
-   if( abs( leftSide - rightSide ) > DEAD_BAND )
-   {
-      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
-      atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
-   }
+   // Don't move left or right if the L/R delta is less than the dead-band setting.
+   if( abs( leftSide - rightSide ) <= DEAD_BAND )
+      azimuthSpeed = 1500;
 
    if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
    {
@@ -185,7 +173,7 @@ void loop()
       lastLoop = millis();
    }
 
-   // Print values in a format the Arduino Serial Plotter can use.
+   // Print values.
    if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
    {
       Serial.println( "Readings:" );
@@ -206,7 +194,7 @@ void loop()
          else
             Serial.printf( "Moving altitude servo down.\n" );
       }
-      if( abs( topRow - bottomRow ) > DEAD_BAND )
+      if( abs( leftSide - rightSide ) > DEAD_BAND )
       {
          if( leftSide > rightSide )
             Serial.printf( "Moving azimuth servo left.\n" );
@@ -217,5 +205,8 @@ void loop()
       lastPrintLoop = millis();
    }
 
+   // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
+   atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
+   atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
    M5.dis.drawpix( 0, ledColor );
 } // End of loop()
