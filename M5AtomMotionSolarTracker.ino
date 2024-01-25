@@ -75,6 +75,7 @@ void loop()
 {
    long altitudeSpeed = 1500;				  // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
    long azimuthSpeed = 1500;				  // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   uint8_t angle = 90;
 
    // M5.update() seems to only call M5.Btn.read();
    M5.update();
@@ -202,11 +203,24 @@ void loop()
             Serial.printf( "Moving azimuth servo right.\n" );
       }
       Serial.println( "" );
+      // ToDo: Delete this when done testing.
+      // map( value, fromLow, fromHigh, toLow, toHigh );
+      angle = map( sideValue, -3000, 3000, 0, 180 );
+      Serial.println( "" );
+      Serial.printf( "sideValue: %ld\n", sideValue );
+      Serial.printf( "angle: %ld\n", angle );
+      Serial.println( "" );
       lastPrintLoop = millis();
    }
 
-   // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
-   atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
-   atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
-   M5.dis.drawpix( 0, ledColor );
+  // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
+  // atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
+  atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+
+  // ToDo: Delete this when done testing.
+  // uint8_t SetServoAngle( uint8_t Servo_CH, uint8_t angle );
+  atomMotion.SetServoAngle( 2, angle );
+  atomMotion.SetServoAngle( 3, angle );
+  atomMotion.SetServoAngle( 4, angle );
+  M5.dis.drawpix( 0, ledColor );
 } // End of loop()
