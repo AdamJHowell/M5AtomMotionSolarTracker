@@ -1,0 +1,58 @@
+#include <M5Atom.h>
+#include "AtomMotion.h"
+
+
+#define pulse       // Comment-out this line to use angles instead of pulse-width.
+#define PORT_B  23
+#define PORT_C  22
+#define GREEN   0x00FF00
+#define BLUE    0x0000FF
+#define WHITE   0xFFFFFF
+
+
+AtomMotion atomMotion;                  // An object to manage the ATOM Motion.
+unsigned long lastLoop = 0;             // Tracks the last time the main loop executed.
+const unsigned long loopDelay = 2000;   // The maximum value of 4,294,967,295 allows for a delay of about 49.7 days.
+bool colorChange = false;
+
+
+void setup()
+{
+  // SerialEnable, I2CEnable, DisplayEnable
+  M5.begin( true, false, true );
+  atomMotion.Init();
+} // End of setup()
+
+
+void loop()
+{
+  M5.update();
+  // Toggle the servo position on channel 1.
+  if( millis() - lastLoop >= loopDelay )
+  {
+    colorChange = !colorChange;
+    if( colorChange )
+    {
+      M5.dis.drawpix( 0, GREEN );
+#ifdef pulse
+      atomMotion.SetServoPulse( 1, 1500 );
+      Serial.println( "Pulse width set to 1500 us." );
+#else
+      atomMotion.SetServoAngle( 1, 90 );
+      Serial.println( "Set to 90 degrees." );
+#endif
+    }
+    else
+    {
+      M5.dis.drawpix( 0, BLUE );
+#ifdef pulse
+      atomMotion.SetServoPulse( 1, 500 );
+      Serial.println( "Pulse width set to 500 us." );
+#else
+      atomMotion.SetServoAngle( 1, 0 );
+      Serial.println( "Set to 0 degrees." );
+#endif
+    }
+    lastLoop = millis();
+  }
+} // End of loop()
