@@ -38,6 +38,9 @@ M5Stack Dlight sensor (https://docs.m5stack.com/en/unit/dlight):
 #include "M5AtomMotionSolarTracker.h"
 
 
+/*
+ * The channelSelect function changes the current active channel of the PaHUB I2C multiplexer.
+ */
 void channelSelect( uint8_t i )
 {
    if( i > 7 )
