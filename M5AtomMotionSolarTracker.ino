@@ -51,6 +51,25 @@ void channelSelect( uint8_t i )
 } // End of channelSelect()
 
 
+/*
+ * pulseWidth is a global that is updated in loop().
+ * pvParameters is not used.
+ */
+void TaskMotion( void *pvParameters )
+{
+   while( 1 )
+   {
+      atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
+      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+    // Testing: Set each servo to the computed speed.
+//      for( int ch = 1; ch < 5; ch++ )
+//         atomMotion.SetServoPulse( ch, pulseWidth );
+    // Give other threads a chance to take control of the core.
+      vTaskDelay( 0 );
+   }
+} // End of TaskMotion()
+
+
 void setup()
 {
    // Wire.begin() must happen before atomMotion.Init().
@@ -62,6 +81,15 @@ void setup()
 
    pinMode( PORT_B, INPUT_PULLUP );
    pinMode( PORT_C, INPUT_PULLUP );
+
+   xTaskCreatePinnedToCore(
+      TaskMotion,	  // Pointer to the task entry function.
+      "TaskMotion", // A descriptive name for the task.
+      4096,         // The size of the task stack specified as the number of bytes.
+      NULL,         // Pointer that will be used as the parameter for the task being created.
+      2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+      NULL,         // Used to pass back a handle by which the created task can be referenced.
+      0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
    M5.dis.drawpix( 0, WHITE );
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
@@ -76,11 +104,11 @@ void setup()
 
 void loop()
 {
-   long altitudeSpeed = 1500;				  // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
-   long azimuthSpeed = 1500;				  // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   long altitudeSpeed = 1500;   // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+   long azimuthSpeed = 1500;    // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
    uint8_t angle = 90;
 
-   // M5.update() seems to only call M5.Btn.read();
+   // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
    M5.update();
 
    // Read the light sensors.
@@ -97,9 +125,11 @@ void loop()
    long leftSide = luxValues[0] + luxValues[2];
    // Sum the right sensors.
    long rightSide = luxValues[1] + luxValues[3];
+   long rowDelta = topRow - bottomRow;
+   long sideDelta = leftSide - rightSide;
 
-   long rowValue = constrain( topRow - bottomRow, -3000, 3000 );
-   long sideValue = constrain( leftSide - rightSide, -3000, 3000 );
+   long rowValue = constrain( rowDelta, -3000, 3000 );
+   long sideValue = constrain( sideDelta, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
    altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
    azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
@@ -123,11 +153,11 @@ void loop()
    }
 
    // Don't move up or down if the up/down delta is less than the dead-band setting.
-   if( abs( topRow - bottomRow ) <= DEAD_BAND )
+   if( abs( rowDelta ) <= DEAD_BAND )
       altitudeSpeed = 1500;
 
    // Don't move left or right if the L/R delta is less than the dead-band setting.
-   if( abs( leftSide - rightSide ) <= DEAD_BAND )
+   if( abs( sideDelta ) <= DEAD_BAND )
       azimuthSpeed = 1500;
 
    if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
@@ -189,16 +219,16 @@ void loop()
       Serial.printf( "azimuthSpeed:  %5ld\n", azimuthSpeed );
       Serial.printf( "altitudeSpeed: %5ld\n", altitudeSpeed );
       Serial.println( "" );
-      Serial.printf( "top - bottom: %5ld\n", topRow - bottomRow );
-      Serial.printf( "left - right: %5ld\n", leftSide - rightSide );
-      if( abs( topRow - bottomRow ) > DEAD_BAND )
+      Serial.printf( "top - bottom: %5ld\n", rowDelta );
+      Serial.printf( "left - right: %5ld\n", sideDelta );
+      if( abs( rowDelta ) > DEAD_BAND )
       {
          if( topRow > bottomRow )
             Serial.printf( "Moving altitude servo up.\n" );
          else
             Serial.printf( "Moving altitude servo down.\n" );
       }
-      if( abs( leftSide - rightSide ) > DEAD_BAND )
+      if( abs( sideDelta ) > DEAD_BAND )
       {
          if( leftSide > rightSide )
             Serial.printf( "Moving azimuth servo left.\n" );
@@ -218,12 +248,12 @@ void loop()
 
   // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
   // atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
-  atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+//  atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
 
   // ToDo: Delete this when done testing.
   // uint8_t SetServoAngle( uint8_t Servo_CH, uint8_t angle );
-  atomMotion.SetServoAngle( 2, angle );
-  atomMotion.SetServoAngle( 3, angle );
-  atomMotion.SetServoAngle( 4, angle );
+//  atomMotion.SetServoAngle( 2, angle );
+//  atomMotion.SetServoAngle( 3, angle );
+//  atomMotion.SetServoAngle( 4, angle );
   M5.dis.drawpix( 0, ledColor );
 } // End of loop()
