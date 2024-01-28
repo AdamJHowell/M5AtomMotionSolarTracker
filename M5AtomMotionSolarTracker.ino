@@ -59,8 +59,10 @@ void TaskMotion( void *pvParameters )
 {
    while( 1 )
    {
-      atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
-      atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
+      M5.dis.drawpix( 0, ledColor );
+      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
+      atomMotion.SetServoPulse( AZIMUTH_SERVO, azimuthSpeed );
+      atomMotion.SetServoPulse( ALTITUDE_SERVO, altitudeSpeed );
     // Testing: Set each servo to the computed speed.
 //      for( int ch = 1; ch < 5; ch++ )
 //         atomMotion.SetServoPulse( ch, pulseWidth );
@@ -73,15 +75,17 @@ void TaskMotion( void *pvParameters )
 void setup()
 {
    // Wire.begin() must happen before atomMotion.Init().
-   Wire.begin( sdaGPIO, sclGPIO );
+   Wire.begin( SDA_GPIO, SCL_GPIO );
    // SerialEnable, I2CEnable, DisplayEnable
    M5.begin( true, false, true );
    Serial.println( "\nBeginning setup()." );
    atomMotion.Init();
 
+   // Establish the two ports as inputs.
    pinMode( PORT_B, INPUT_PULLUP );
    pinMode( PORT_C, INPUT_PULLUP );
 
+   // Pin the TaskMotion() function to core 0.
    xTaskCreatePinnedToCore(
       TaskMotion,	  // Pointer to the task entry function.
       "TaskMotion", // A descriptive name for the task.
@@ -91,7 +95,10 @@ void setup()
       NULL,         // Used to pass back a handle by which the created task can be referenced.
       0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
+   // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
+
+   // Configure every M5Stack DLIGHT sensor.
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
       channelSelect( sensorAddresses[i] );
@@ -104,8 +111,8 @@ void setup()
 
 void loop()
 {
-   long altitudeSpeed = 1500;   // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
-   long azimuthSpeed = 1500;    // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+//   long altitudeSpeed = 1500;   // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
+//   long azimuthSpeed = 1500;    // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
    uint8_t angle = 90;
 
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
@@ -117,6 +124,7 @@ void loop()
       channelSelect( sensorAddresses[i] );
       luxValues[i] = sensorArray[i].getLUX();
    }
+
    // Sum the top sensors.
    long topRow = luxValues[0] + luxValues[1];
    // Sum the bottom sensors.
@@ -125,9 +133,12 @@ void loop()
    long leftSide = luxValues[0] + luxValues[2];
    // Sum the right sensors.
    long rightSide = luxValues[1] + luxValues[3];
+
+   // Calculate the difference between the rows and sides.
    long rowDelta = topRow - bottomRow;
    long sideDelta = leftSide - rightSide;
 
+   // Constrain the rows and sides, because delta greater than 3k is enough that we should move full speed.
    long rowValue = constrain( rowDelta, -3000, 3000 );
    long sideValue = constrain( sideDelta, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
@@ -160,7 +171,7 @@ void loop()
    if( abs( sideDelta ) <= DEAD_BAND )
       azimuthSpeed = 1500;
 
-   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > loopDelay )
+   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
    {
       if( M5.Btn.lastChange() > lastLoop )
       {
@@ -208,7 +219,7 @@ void loop()
    }
 
    // Print values.
-   if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > printLoopDelay )
+   if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
    {
       Serial.println( "Readings:" );
       Serial.printf( "%5ld + %5ld = %5ld\n", luxValues[0], luxValues[1], topRow );
@@ -245,15 +256,4 @@ void loop()
       Serial.println( "" );
       lastPrintLoop = millis();
    }
-
-  // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
-  // atomMotion.SetServoPulse( azimuthServo, azimuthSpeed );
-//  atomMotion.SetServoPulse( altitudeServo, altitudeSpeed );
-
-  // ToDo: Delete this when done testing.
-  // uint8_t SetServoAngle( uint8_t Servo_CH, uint8_t angle );
-//  atomMotion.SetServoAngle( 2, angle );
-//  atomMotion.SetServoAngle( 3, angle );
-//  atomMotion.SetServoAngle( 4, angle );
-  M5.dis.drawpix( 0, ledColor );
 } // End of loop()
