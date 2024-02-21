@@ -55,18 +55,14 @@ void channelSelect( uint8_t i )
  * pulseWidth is a global that is updated in loop().
  * pvParameters is not used.
  */
-void TaskMotion( void *pvParameters )
+[[noreturn]] void TaskMotion( void *pvParameters )
 {
-   while( 1 )
+   while( true )
    {
       M5.dis.drawpix( 0, ledColor );
-      // uint8_t SetServoPulse( uint8_t Servo_CH, uint16_t width );
       atomMotion.SetServoPulse( AZIMUTH_SERVO, azimuthSpeed );
       atomMotion.SetServoPulse( ALTITUDE_SERVO, altitudeSpeed );
-    // Testing: Set each servo to the computed speed.
-//      for( int ch = 1; ch < 5; ch++ )
-//         atomMotion.SetServoPulse( ch, pulseWidth );
-    // Give other threads a chance to take control of the core.
+      // Give other threads a chance to take control of the core.
       vTaskDelay( 0 );
    }
 } // End of TaskMotion()
@@ -87,13 +83,13 @@ void setup()
 
    // Pin the TaskMotion() function to core 0.
    xTaskCreatePinnedToCore(
-      TaskMotion,	  // Pointer to the task entry function.
-      "TaskMotion", // A descriptive name for the task.
-      4096,         // The size of the task stack specified as the number of bytes.
-      NULL,         // Pointer that will be used as the parameter for the task being created.
-      2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-      NULL,         // Used to pass back a handle by which the created task can be referenced.
-      0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
+         TaskMotion,  // Pointer to the task entry function.
+         "TaskMotion",   // A descriptive name for the task.
+         4096,       // The size of the task stack specified as the number of bytes.
+         nullptr,    // Pointer that will be used as the parameter for the task being created.
+         2,             // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+         nullptr,   // Used to pass back a handle by which the created task can be referenced.
+         0 );            // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
    // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
@@ -111,8 +107,6 @@ void setup()
 
 void loop()
 {
-//   long altitudeSpeed = 1500;   // Holds the current speed of the altitude servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
-//   long azimuthSpeed = 1500;    // Holds the current speed of the azimuth servo.  Ranges from 500 to 2500.  The default of 1500 is motionless.
    uint8_t angle = 90;
 
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
@@ -146,7 +140,7 @@ void loop()
    azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
 
    // If the up stop is tripped, prevent the servo from moving upward.
-   if( !digitalRead( PORT_B ) )
+   if( !digitalRead( PORT_B ))
    {
       // ToDo: Determine if this should be 500-1500 instead.
       altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
@@ -155,7 +149,7 @@ void loop()
    }
 
    // If the down stop is tripped, prevent the servo from moving downward.
-   if( !digitalRead( PORT_C ) )
+   if( !digitalRead( PORT_C ))
    {
       // ToDo: Determine if this should be 1500-2500 instead.
       altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
@@ -171,7 +165,7 @@ void loop()
    if( abs( sideDelta ) <= DEAD_BAND )
       azimuthSpeed = 1500;
 
-   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
+   if(( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
    {
       if( M5.Btn.lastChange() > lastLoop )
       {
@@ -219,16 +213,16 @@ void loop()
    }
 
    // Print values.
-   if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
+   if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
    {
       Serial.println( "Readings:" );
-      Serial.printf( "%5ld + %5ld = %5ld\n", luxValues[0], luxValues[1], topRow );
-      Serial.printf( "%5ld + %5ld = %5ld\n", luxValues[2], luxValues[3], bottomRow );
-      Serial.printf( "    +      +\n" );
-      Serial.printf( "%5ld  %5ld\n", leftSide, rightSide );
+      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[0], luxValues[1], topRow );
+      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[2], luxValues[3], bottomRow );
+      Serial.printf( "-----   -----\n" );
+      Serial.printf( "%5ld   %5ld\n", leftSide, rightSide );
       Serial.println( "" );
-      Serial.printf( "azimuthSpeed:  %5ld\n", azimuthSpeed );
-      Serial.printf( "altitudeSpeed: %5ld\n", altitudeSpeed );
+      Serial.printf( "azimuthSpeed:  %5hu\n", azimuthSpeed );
+      Serial.printf( "altitudeSpeed: %5hu\n", altitudeSpeed );
       Serial.println( "" );
       Serial.printf( "top - bottom: %5ld\n", rowDelta );
       Serial.printf( "left - right: %5ld\n", sideDelta );
@@ -252,7 +246,9 @@ void loop()
       angle = map( sideValue, -3000, 3000, 0, 180 );
       Serial.println( "" );
       Serial.printf( "sideValue: %ld\n", sideValue );
-      Serial.printf( "angle: %ld\n", angle );
+      Serial.printf( "angle: %hhu\n", angle );
+      Serial.println( "" );
+      Serial.println( "---------------------" );
       Serial.println( "" );
       lastPrintLoop = millis();
    }
