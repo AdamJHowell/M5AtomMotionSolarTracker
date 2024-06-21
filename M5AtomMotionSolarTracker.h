@@ -49,13 +49,10 @@ unsigned long                      ledColor         = 0xFFFFFF;                 
 M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
 uint16_t                     luxValues[NUM_SENSORS] = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
 uint8_t                sensorAddresses[NUM_SENSORS] = { 0, 1, 4, 5 };             // An array of the Pa.HUB ports with DLIGHT sensors attached.
-//std::array<M5_DLight, NUM_SENSORS> sensorArray      = {};                         // An array of DLIGHT sensor objects.
-//std::array<uint16_t, NUM_SENSORS>  luxValues        = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
-//std::array<uint8_t, NUM_SENSORS>   sensorAddresses  = { 0, 1, 4, 5 };           // An array of the Pa.HUB ports with DLIGHT sensors attached.
 
 
 void channelSelect( uint8_t i );
 
-[[noreturn]] void TaskMotion( void *pvParameters );
+[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters );
 
 #endif //ATOMMOTIONDEMO_ATOMMOTIONDEMO_H

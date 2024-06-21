@@ -55,7 +55,7 @@ void channelSelect( uint8_t i )
  * pulseWidth is a global that is updated in loop().
  * pvParameters is not used.
  */
-[[noreturn]] void TaskMotion( void *pvParameters )
+[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters )
 {
    while( true )
    {
@@ -107,7 +107,7 @@ void setup()
 
 void loop()
 {
-   uint8_t angle = 90;
+   long angle = 90;
 
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
    M5.update();
@@ -246,7 +246,7 @@ void loop()
       angle = map( sideValue, -3000, 3000, 0, 180 );
       Serial.println( "" );
       Serial.printf( "sideValue: %ld\n", sideValue );
-      Serial.printf( "angle: %hhu\n", angle );
+      Serial.printf( "angle: %ld\n", angle );
       Serial.println( "" );
       Serial.println( "---------------------" );
       Serial.println( "" );
