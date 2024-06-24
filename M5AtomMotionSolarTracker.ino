@@ -48,7 +48,7 @@ M5Stack Dlight sensor (https://docs.m5stack.com/en/unit/dlight):
 /*
  * The channelSelect function changes the current active channel of the PaHUB I2C multiplexer.
  */
-void channelSelect( uint8_t i )
+void channelSelect( const uint8_t i )
 {
    if( i > 7 )
       return;
@@ -125,24 +125,24 @@ void loop()
    }
 
    // Sum the top sensors.
-   long topRow = luxValues[0] + luxValues[1];
+   const long topRow = luxValues[0] + luxValues[1];
    // Sum the bottom sensors.
-   long bottomRow = luxValues[2] + luxValues[3];
+   const long bottomRow = luxValues[2] + luxValues[3];
    // Sum the left sensors.
-   long leftSide = luxValues[0] + luxValues[2];
+   const long leftSide = luxValues[0] + luxValues[2];
    // Sum the right sensors.
-   long rightSide = luxValues[1] + luxValues[3];
+   const long rightSide = luxValues[1] + luxValues[3];
 
    // Calculate the difference between the rows and sides.
-   long rowDelta = topRow - bottomRow;
-   long sideDelta = leftSide - rightSide;
+   const long rowDelta = topRow - bottomRow;
+   const long sideDelta = leftSide - rightSide;
 
    // Constrain the rows and sides, because delta greater than 3k is enough that we should move full speed.
-   long rowValue = constrain( rowDelta, -3000, 3000 );
-   long sideValue = constrain( sideDelta, -3000, 3000 );
+   const long rowValue = constrain( rowDelta, -3000, 3000 );
+   const long sideValue = constrain( sideDelta, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
-   long tempAlt = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
-   long tempAz = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   const long tempAlt = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   const long tempAz = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
    altitudeSpeed = tempAlt;
    azimuthSpeed = tempAz;
 
@@ -251,7 +251,7 @@ void loop()
 
       // ToDo: Delete this when done testing.
       // map( value, fromLow, fromHigh, toLow, toHigh );
-      long angle = map( sideValue, -3000, 3000, 0, 180 );
+      const long angle = map( sideValue, -3000, 3000, 0, 180 );
       Serial.println( "" );
       Serial.printf( "sideValue: %ld\n", sideValue );
       Serial.printf( "angle: %ld\n", angle );
