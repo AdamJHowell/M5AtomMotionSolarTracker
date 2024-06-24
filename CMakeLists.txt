@@ -12,9 +12,9 @@ include_directories( .
 		"C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/tools/sdk/esp32/include/freertos/include/"
 		"C:/Users/Adam/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/tools/sdk/esp32/include/soc/esp32/include/"
 		"C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/tools/sdk/esp32/include/soc/esp32/include/"
-		"C:/Users/Adam/Documents/Arduino/libraries/M5-DLight/src/"
 		"C:/Users/Adam/Documents/Arduino/libraries/M5Atom/src/"
 		"C:/Users/adam.howell/Documents/Arduino/libraries/M5Atom/src/"
+		"C:/Users/Adam/Documents/Arduino/libraries/M5-DLight/src/"
 		"C:/Users/adam.howell/Documents/Arduino/libraries/M5-DLight/src/"
 )
 
