@@ -5,12 +5,10 @@
 #define ESP32
 #endif
 
-#include <Wire.h>
 #include <M5Atom.h>
 #include <M5_DLight.h>
 #include "AtomMotion.h"
 #include <Arduino.h>
-#include <array>
 
 
 // Constants
