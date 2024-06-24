@@ -1,6 +1,7 @@
 .idea/
 *.iml
 privateInfo.*
+PrivateInfo.*
 debug_custom.json
 *.svd
 cmake-build-*/
