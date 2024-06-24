@@ -55,7 +55,7 @@ void channelSelect( uint8_t i )
  * pulseWidth is a global that is updated in loop().
  * pvParameters is not used.
  */
-[[noreturn]] void TaskMotion( void *pvParameters )
+[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters )
 {
    while( true )
    {
@@ -107,8 +107,6 @@ void setup()
 
 void loop()
 {
-   uint8_t angle = 90;
-
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
    M5.update();
 
@@ -136,8 +134,10 @@ void loop()
    long rowValue = constrain( rowDelta, -3000, 3000 );
    long sideValue = constrain( sideDelta, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
-   altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
-   azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   long tempAlt = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   long tempAz = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   altitudeSpeed = tempAlt;
+   azimuthSpeed = tempAz;
 
    // If the up stop is tripped, prevent the servo from moving upward.
    if( !digitalRead( PORT_B ))
@@ -241,15 +241,17 @@ void loop()
             Serial.printf( "Moving azimuth servo right.\n" );
       }
       Serial.println( "" );
+
       // ToDo: Delete this when done testing.
       // map( value, fromLow, fromHigh, toLow, toHigh );
-      angle = map( sideValue, -3000, 3000, 0, 180 );
+      long angle = map( sideValue, -3000, 3000, 0, 180 );
       Serial.println( "" );
       Serial.printf( "sideValue: %ld\n", sideValue );
-      Serial.printf( "angle: %hhu\n", angle );
+      Serial.printf( "angle: %ld\n", angle );
       Serial.println( "" );
       Serial.println( "---------------------" );
       Serial.println( "" );
+
       lastPrintLoop = millis();
    }
 } // End of loop()

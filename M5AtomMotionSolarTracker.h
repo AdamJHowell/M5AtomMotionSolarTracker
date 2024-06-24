@@ -30,8 +30,8 @@ const long                         CYAN             = 0x00FFFF;                 
 const long                         WHITE            = 0xFFFFFF;                   // The RGB code for the color white.
 const unsigned int                 PORT_B           = 23;                         // The address of port B.
 const unsigned int                 PORT_C           = 22;                         // The address of port C.
-const unsigned int                 AZIMUTH_SERVO    = 2;                          // The ATOM Motion port that the azimuth servo is plugged into.
-const unsigned int                 ALTITUDE_SERVO   = 1;                          // The ATOM Motion port that the altitude servo is plugged into.
+const unsigned int                 AZIMUTH_SERVO    = 3;                          // The ATOM Motion port that the azimuth servo is plugged into.
+const unsigned int                 ALTITUDE_SERVO   = 4;                          // The ATOM Motion port that the altitude servo is plugged into.
 const unsigned int                 NUM_SENSORS      = 4;                          // The number of sensors.
 const unsigned int                 SERVO_MIN        = 500;                        // The minimum pulse width for the servos.
 const unsigned int                 SERVO_MAX        = 2500;                       // The maximum pulse width for the servos.
@@ -49,13 +49,10 @@ unsigned long                      ledColor         = 0xFFFFFF;                 
 M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
 uint16_t                     luxValues[NUM_SENSORS] = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
 uint8_t                sensorAddresses[NUM_SENSORS] = { 0, 1, 4, 5 };             // An array of the Pa.HUB ports with DLIGHT sensors attached.
-//std::array<M5_DLight, NUM_SENSORS> sensorArray      = {};                         // An array of DLIGHT sensor objects.
-//std::array<uint16_t, NUM_SENSORS>  luxValues        = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
-//std::array<uint8_t, NUM_SENSORS>   sensorAddresses  = { 0, 1, 4, 5 };           // An array of the Pa.HUB ports with DLIGHT sensors attached.
 
 
 void channelSelect( uint8_t i );
 
-[[noreturn]] void TaskMotion( void *pvParameters );
+[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters );
 
 #endif //ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
