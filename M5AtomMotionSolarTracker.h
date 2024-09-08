@@ -1,12 +1,11 @@
-#ifndef ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
-#define ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
+#ifndef M5ATOMMOTIONSOLARTRACKER_M5ATOMMOTIONSOLARTRACKER_H
+#define M5ATOMMOTIONSOLARTRACKER_M5ATOMMOTIONSOLARTRACKER_H
 
 #ifndef ESP32
 #define ESP32
 #endif
 
 #include <M5Atom.h>
-#include <M5_DLight.h>
 #include "AtomMotion.h"
 #include <Arduino.h>
 
@@ -37,20 +36,21 @@ const unsigned int                 DEAD_BAND        = 100;                      
 const unsigned long                LOOP_DELAY       = 10;                         // The maximum value of 4,294,967,295 allows for a delay of about 49.7 days.
 const unsigned long                PRINT_LOOP_DELAY = 1000;                       // The minimum time between serial printing of the lux values.
 // Variables
-AtomMotion                         atomMotion;                                    // An object to manage the ATOM Motion.
 uint16_t                           azimuthSpeed     = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
 uint16_t                           altitudeSpeed    = 1500;                       // The pulse width of the altitude servo signal in microseconds.
 unsigned int                       buttonCount      = 0;                          // Tracks the number of times the ATOM button was pressed.
 unsigned long                      lastLoop         = 0;                          // Tracks the last time the main loop executed.
 unsigned long                      lastPrintLoop    = 0;                          // Tracks the last time the print loop executed.
 unsigned long                      ledColor         = 0xFFFFFF;                   // Tracks the color of the onboard LED.
-M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
 uint16_t                     luxValues[NUM_SENSORS] = { 2112, 2112, 2112, 2112 }; // An array of light readings: top left, top right, bottom left, bottom right.
 uint8_t                sensorAddresses[NUM_SENSORS] = { 0, 1, 4, 5 };             // An array of the Pa.HUB ports with DLIGHT sensors attached.
+// Class instances
+AtomMotion                         atomMotion;                                    // An object to manage the ATOM Motion.
+M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
 
 
 void channelSelect( uint8_t i );
 
 [[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters );
 
-#endif //ATOMMOTIONDEMO_ATOMMOTIONDEMO_H
+#endif //M5ATOMMOTIONSOLARTRACKER_M5ATOMMOTIONSOLARTRACKER_H
