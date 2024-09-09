@@ -6,9 +6,13 @@
 #endif
 
 #include <M5Atom.h>
+#include <M5_DLight.h>
 #include "AtomMotion.h"
 #include <Arduino.h>
+#include <Wire.h>
 
+
+#define PaHUB_I2C_ADDRESS 0x70
 
 // Constants
 const int                          SDA_GPIO         = 26;                         // Use this to set the SDA GPIO if your board uses a non-standard GPIOs for the I2C bus.
@@ -51,6 +55,6 @@ M5_DLight                  sensorArray[NUM_SENSORS] = {};                       
 
 void channelSelect( uint8_t i );
 
-[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters );
+void TaskMotion( void *pvParameters );
 
 #endif //M5ATOMMOTIONSOLARTRACKER_M5ATOMMOTIONSOLARTRACKER_H
