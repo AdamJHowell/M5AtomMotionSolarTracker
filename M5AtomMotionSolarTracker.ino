@@ -15,6 +15,8 @@ M5Stack ATOM Lite:
       SDA 25
       Seems to use this button library: https://docs.m5stack.com/en/api/atom/button
 
+It seems the M5.begin() call must happen before the atomMotion.Init() call.
+
 M5Stack ATOM Motion (http://docs.m5stack.com/en/atom/atom_motion):
    https://github.com/m5stack/M5Atom/tree/master/examples/ATOM_BASE/ATOM_Motion
    PORT.B (black connector), 23 white, 33 yellow
@@ -48,7 +50,7 @@ M5Stack Dlight sensor (https://docs.m5stack.com/en/unit/dlight):
 /*
  * The channelSelect function changes the current active channel of the PaHUB I2C multiplexer.
  */
-void channelSelect( const uint8_t i )
+void channelSelect( uint8_t i )
 {
    if( i > 7 )
       return;
@@ -62,7 +64,7 @@ void channelSelect( const uint8_t i )
  * pulseWidth is a global that is updated in loop().
  * pvParameters is not used.
  */
-[[noreturn]] void TaskMotion( __attribute__((unused)) void *pvParameters )
+void TaskMotion( void *pvParameters )
 {
    while( true )
    {
@@ -77,12 +79,13 @@ void channelSelect( const uint8_t i )
 
 void setup()
 {
-   // Wire.begin() must happen before atomMotion.Init().
-   Wire.begin( SDA_GPIO, SCL_GPIO );
-   // SerialEnable, I2CEnable, DisplayEnable
+   // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
    M5.begin( true, false, true );
    Serial.println( "\nBeginning setup()." );
+   // AtomMotion.Init() should be called after M5.begin().
    atomMotion.Init();
+   // Wire.begin( SDA_GPIO, SCL_GPIO );       // I'm pretty sure this breaks the AtomMotion servos.
+   // Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
 
    // Establish the two ports as inputs.
    pinMode( PORT_B, INPUT_PULLUP );
@@ -90,17 +93,21 @@ void setup()
 
    // Pin the TaskMotion() function to core 0.
    xTaskCreatePinnedToCore(
-         TaskMotion,  // Pointer to the task entry function.
-         "TaskMotion",   // A descriptive name for the task.
-         4096,       // The size of the task stack specified as the number of bytes.
-         nullptr,    // Pointer that will be used as the parameter for the task being created.
-         2,             // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-         nullptr,   // Used to pass back a handle by which the created task can be referenced.
-         0 );            // Values 0 or 1 indicate the CPU core which the task will be pinned to.
+         TaskMotion,   // Pointer to the task entry function.
+         "TaskMotion", // A descriptive name for the task.
+         4096,         // The size of the task stack specified as the number of bytes.
+         nullptr,      // Pointer that will be used as the parameter for the task being created.
+         2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+         nullptr,      // Used to pass back a handle by which the created task can be referenced.
+         0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
    // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
 
+   sensorAddresses[0] = 0;
+   sensorAddresses[1] = 1;
+   sensorAddresses[2] = 4;
+   sensorAddresses[3] = 5;
    // Configure every M5Stack DLIGHT sensor.
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
@@ -108,6 +115,7 @@ void setup()
       sensorArray[i].begin();
       sensorArray[i].setMode( CONTINUOUSLY_H_RESOLUTION_MODE );
    }
+
    Serial.println( "\nFinished setup().\n" );
 } // End of setup()
 
