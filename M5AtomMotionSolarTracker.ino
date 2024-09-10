@@ -149,15 +149,12 @@ void loop()
    const long rowValue = constrain( rowDelta, -3000, 3000 );
    const long sideValue = constrain( sideDelta, -3000, 3000 );
    // map( value, fromLow, fromHigh, toLow, toHigh );
-   const long tempAlt = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
-   const long tempAz = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
-   altitudeSpeed = tempAlt;
-   azimuthSpeed = tempAz;
+   altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
 
    // If the up stop is tripped, prevent the servo from moving upward.
    if( !digitalRead( PORT_B ))
    {
-      // ToDo: Determine if this should be 500-1500 instead.
       altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
       ledColor = GREEN;
       Serial.printf( "-- Hit limit B up stop!\n" );
@@ -166,7 +163,6 @@ void loop()
    // If the down stop is tripped, prevent the servo from moving downward.
    if( !digitalRead( PORT_C ))
    {
-      // ToDo: Determine if this should be 1500-2500 instead.
       altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
       ledColor = BLUE;
       Serial.printf( "-- Hit limit C down stop!\n" );
@@ -257,8 +253,7 @@ void loop()
       }
       Serial.println( "" );
 
-      // ToDo: Delete this when done testing.
-      // map( value, fromLow, fromHigh, toLow, toHigh );
+      // How to use map( value, fromLow, fromHigh, toLow, toHigh );
       const long angle = map( sideValue, -3000, 3000, 0, 180 );
       Serial.println( "" );
       Serial.printf( "sideValue: %ld\n", sideValue );
