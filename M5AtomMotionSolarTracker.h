@@ -12,7 +12,8 @@
 #include <Wire.h>
 
 
-#define PaHUB_I2C_ADDRESS 0x70
+// #define PaHUB_I2C_ADDRESS 0x70
+constexpr int PaHUB_I2C_ADDRESS = 0x70;
 
 // Constants
 const int                          SDA_GPIO         = 26;                         // Use this to set the SDA GPIO if your board uses a non-standard GPIOs for the I2C bus.
