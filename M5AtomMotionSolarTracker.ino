@@ -80,10 +80,10 @@ void TaskMotion( void *pvParameters )
 void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
-   M5.begin( true, false, true );
+   M5.begin( true, true, true );
    Serial.println( "\nBeginning setup()." );
    // Wire.begin( SDA_GPIO, SCL_GPIO );       // I'm pretty sure this breaks the AtomMotion servos.
-   Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
+   // Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
    // AtomMotion.Init() should be called after M5.begin().
    atomMotion.Init();
 
