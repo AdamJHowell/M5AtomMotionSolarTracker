@@ -50,7 +50,7 @@ M5Stack Dlight sensor (https://docs.m5stack.com/en/unit/dlight):
 /*
  * The channelSelect function changes the current active channel of the PaHUB I2C multiplexer.
  */
-void channelSelect( uint8_t i )
+void channelSelect( const uint8_t i )
 {
    if( i > 7 )
       return;
@@ -82,10 +82,10 @@ void setup()
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
    M5.begin( true, false, true );
    Serial.println( "\nBeginning setup()." );
+   // Wire.begin( SDA_GPIO, SCL_GPIO );       // I'm pretty sure this breaks the AtomMotion servos.
+   Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
    // AtomMotion.Init() should be called after M5.begin().
    atomMotion.Init();
-   // Wire.begin( SDA_GPIO, SCL_GPIO );       // I'm pretty sure this breaks the AtomMotion servos.
-   // Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
 
    // Establish the two ports as inputs.
    pinMode( PORT_B, INPUT_PULLUP );
