@@ -1,3 +1,7 @@
+#ifndef _M5ATOM_MOTION_H_
+#define _M5ATOM_MOTION_H_
+
+
 #include <M5Atom.h>
 
 #define SERVO_ADDRESS 0X38
@@ -24,3 +28,5 @@ class AtomMotion
 
 	int8_t ReadMotorSpeed( uint8_t Motor_CH );
 };
+
+#endif
