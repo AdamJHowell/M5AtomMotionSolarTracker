@@ -5,9 +5,9 @@
 #define ESP32
 #endif
 
-#include <M5Atom.h>
 #include <M5_DLight.h>
-#include "AtomMotion.h"
+#include "M5Libs/AtomMotion.h"
+#include "M5Libs/M5Atom.h"
 #include <Arduino.h>
 #include <Wire.h>
 

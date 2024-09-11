@@ -1,10 +1,10 @@
 /*
 Requires:
   https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
-  https://github.com/m5stack/M5Atom
+  https://github.com/m5stack/M5Atom/
   https://github.com/m5stack/M5Stack/
-  https://github.com/m5stack/M5-DLight
-  https://github.com/FastLED/FastLED
+  https://github.com/m5stack/M5-DLight/
+  https://github.com/FastLED/FastLED/
 
 M5Stack ATOM Lite:
    ATOM Lite HY2.0-4P:
