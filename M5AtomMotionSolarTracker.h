@@ -42,6 +42,7 @@ const unsigned long                LOOP_DELAY       = 10;                       
 const unsigned long                PRINT_LOOP_DELAY = 1000;                       // The minimum time between serial printing of the lux values.
 // Variables
 uint16_t                           azimuthSpeed     = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
+uint16_t                           orangeSpeed     = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
 uint16_t                           altitudeSpeed    = 1500;                       // The pulse width of the altitude servo signal in microseconds.
 unsigned int                       buttonCount      = 0;                          // Tracks the number of times the ATOM button was pressed.
 unsigned long                      lastLoop         = 0;                          // Tracks the last time the main loop executed.
@@ -52,6 +53,10 @@ uint8_t                sensorAddresses[NUM_SENSORS] = { 0, 1, 4, 5 };           
 // Class instances
 AtomMotion                         atomMotion;                                    // An object to manage the ATOM Motion.
 M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
+
+const unsigned int SERVO_LOOP_DELAY = 100;
+unsigned long lastServoLoop = 0;
+bool incrementing = false;
 
 
 void channelSelect( uint8_t i );
