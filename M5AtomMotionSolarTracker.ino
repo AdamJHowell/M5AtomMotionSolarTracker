@@ -61,7 +61,7 @@ void channelSelect( const uint8_t i )
 
 
 /*
- * pulseWidth is a global that is updated in loop().
+ * azimuthSpeed and altitudeSpeed are global variables updated in loop().
  * pvParameters is not used.
  */
 void TaskMotion( void *pvParameters )
@@ -71,6 +71,8 @@ void TaskMotion( void *pvParameters )
       M5.dis.drawpix( 0, ledColor );
       atomMotion.SetServoPulse( AZIMUTH_SERVO, azimuthSpeed );
       atomMotion.SetServoPulse( ALTITUDE_SERVO, altitudeSpeed );
+      atomMotion.SetServoPulse( 1, orangeSpeed );
+      atomMotion.SetServoPulse( 2, orangeSpeed );
       // Give other threads a chance to take control of the core.
       vTaskDelay( 0 );
    }
@@ -93,13 +95,13 @@ void setup()
 
    // Pin the TaskMotion() function to core 0.
    xTaskCreatePinnedToCore(
-         TaskMotion,   // Pointer to the task entry function.
-         "TaskMotion", // A descriptive name for the task.
-         4096,         // The size of the task stack specified as the number of bytes.
-         nullptr,      // Pointer that will be used as the parameter for the task being created.
-         2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-         nullptr,      // Used to pass back a handle by which the created task can be referenced.
-         0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
+       TaskMotion,   // Pointer to the task entry function.
+       "TaskMotion", // A descriptive name for the task.
+       4096,         // The size of the task stack specified as the number of bytes.
+       nullptr,      // Pointer that will be used as the parameter for the task being created.
+       2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+       nullptr,      // Used to pass back a handle by which the created task can be referenced.
+       0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
    // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
@@ -125,12 +127,39 @@ void loop()
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
    M5.update();
 
+   if( ( lastServoLoop == 0 ) || ( millis() - lastServoLoop ) > SERVO_LOOP_DELAY )
+   {
+      if( orangeSpeed >= 2500 )
+      {
+         orangeSpeed = 1500;
+         incrementing = false;
+      }
+      else if( orangeSpeed <= 500 )
+      {
+         orangeSpeed = 1500;
+         incrementing = true;
+      }
+      if( incrementing )
+      {
+         orangeSpeed += 20;
+      }
+      else
+      {
+         orangeSpeed -= 20;
+      }
+      orangeSpeed = constrain( orangeSpeed, SERVO_MIN, SERVO_MAX );
+      lastServoLoop = millis();
+   }
+
    // Read the light sensors.
+   const unsigned long sensorStart = millis();
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
       channelSelect( sensorAddresses[i] );
+      // This has a 1000 ms timeout if the sensor cannot be read.
       luxValues[i] = sensorArray[i].getLUX();
    }
+   const unsigned long sensorDuration = millis() - sensorStart;
 
    // Sum the top sensors.
    const long topRow = luxValues[0] + luxValues[1];
@@ -153,7 +182,7 @@ void loop()
    azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
 
    // If the up stop is tripped, prevent the servo from moving upward.
-   if( !digitalRead( PORT_B ))
+   if( !digitalRead( PORT_B ) )
    {
       altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
       ledColor = GREEN;
@@ -161,7 +190,7 @@ void loop()
    }
 
    // If the down stop is tripped, prevent the servo from moving downward.
-   if( !digitalRead( PORT_C ))
+   if( !digitalRead( PORT_C ) )
    {
       altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
       ledColor = BLUE;
@@ -169,25 +198,25 @@ void loop()
    }
 
    // Don't move up or down if the up/down delta is less than the dead-band setting.
-   if( abs( rowDelta ) <= DEAD_BAND )
-      altitudeSpeed = 1500;
+   // if( abs( rowDelta ) <= DEAD_BAND )
+   //    altitudeSpeed = 1500;
 
    // Don't move left or right if the L/R delta is less than the dead-band setting.
-   if( abs( sideDelta ) <= DEAD_BAND )
-      azimuthSpeed = 1500;
+   // if( abs( sideDelta ) <= DEAD_BAND )
+   //    azimuthSpeed = 1500;
 
-   if(( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
+   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
    {
       if( M5.Btn.lastChange() > lastLoop )
       {
          buttonCount++;
          Serial.printf( "  Button press!\n" );
-         if( buttonCount > 9 )
+         if( buttonCount > 6 )
             buttonCount = 0;
          switch( buttonCount )
          {
             case 0:
-               ledColor = RED;
+               ledColor = MAGENTA;
                break;
             case 1:
                ledColor = ORANGE;
@@ -207,15 +236,6 @@ void loop()
             case 6:
                ledColor = VIOLET;
                break;
-            case 7:
-               ledColor = MAGENTA;
-               break;
-            case 8:
-               ledColor = CYAN;
-               break;
-            case 9:
-               ledColor = BLACK;
-               break;
             default:
                break;
          }
@@ -223,8 +243,7 @@ void loop()
       lastLoop = millis();
    }
 
-   // Print values.
-   if(( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
+   if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
    {
       Serial.println( "Readings:" );
       Serial.printf( "%5hu + %5hu = %ld\n", luxValues[0], luxValues[1], topRow );
@@ -252,13 +271,13 @@ void loop()
             Serial.printf( "Moving azimuth servo right.\n" );
       }
       Serial.println( "" );
-
-      // How to use map( value, fromLow, fromHigh, toLow, toHigh );
-      const long angle = map( sideValue, -3000, 3000, 0, 180 );
-      Serial.println( "" );
-      Serial.printf( "sideValue: %ld\n", sideValue );
-      Serial.printf( "angle: %ld\n", angle );
-      Serial.println( "" );
+      Serial.print( "Sensor read duration: " );
+      Serial.print( sensorDuration );
+      Serial.println( " (ms)" );
+      if( sensorDuration > 3200 )
+         ledColor = RED;
+      Serial.print( "Servo 2 pulse width: " );
+      Serial.println( orangeSpeed );
       Serial.println( "---------------------" );
       Serial.println( "" );
 
