@@ -85,7 +85,7 @@ void TaskMotion( void *pvParameters )
 void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
-   M5.begin( true, false, true );
+   M5.begin( true, true, true );
    // This Init() should be called after M5.begin().
    atomMotion.Init();
 
