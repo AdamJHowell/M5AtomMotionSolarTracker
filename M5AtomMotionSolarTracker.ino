@@ -66,13 +66,14 @@ void channelSelect( const uint8_t i )
  */
 void TaskMotion( void *pvParameters )
 {
+   // ReSharper disable once CppDFAEndlessLoop
    while( true )
    {
       M5.dis.drawpix( 0, ledColor );
       atomMotion.SetServoPulse( AZIMUTH_SERVO, azimuthSpeed );
       atomMotion.SetServoPulse( ALTITUDE_SERVO, altitudeSpeed );
-      atomMotion.SetServoPulse( 1, orangeSpeed );
-      atomMotion.SetServoPulse( 2, orangeSpeed );
+      atomMotion.SetServoPulse( 1, demoServoPulseWidth );
+      atomMotion.SetServoPulse( 2, demoServoPulseWidth );
       // Give other threads a chance to take control of the core.
       vTaskDelay( 0 );
    }
@@ -83,11 +84,10 @@ void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
    M5.begin( true, true, true );
-   Serial.println( "\nBeginning setup()." );
-   // Wire.begin( SDA_GPIO, SCL_GPIO );       // I'm pretty sure this breaks the AtomMotion servos.
-   // Wire.begin();       // I'm pretty sure this breaks the AtomMotion servos.
    // AtomMotion.Init() should be called after M5.begin().
    atomMotion.Init();
+
+   Serial.println( "\nBeginning setup()." );
 
    // Establish the two ports as inputs.
    pinMode( PORT_B, INPUT_PULLUP );
@@ -127,30 +127,6 @@ void loop()
    // M5.update() seems to only call M5.Btn.read(), which reads the state of the in-built button.
    M5.update();
 
-   if( ( lastServoLoop == 0 ) || ( millis() - lastServoLoop ) > SERVO_LOOP_DELAY )
-   {
-      if( orangeSpeed >= 2500 )
-      {
-         orangeSpeed = 1500;
-         incrementing = false;
-      }
-      else if( orangeSpeed <= 500 )
-      {
-         orangeSpeed = 1500;
-         incrementing = true;
-      }
-      if( incrementing )
-      {
-         orangeSpeed += 20;
-      }
-      else
-      {
-         orangeSpeed -= 20;
-      }
-      orangeSpeed = constrain( orangeSpeed, SERVO_MIN, SERVO_MAX );
-      lastServoLoop = millis();
-   }
-
    // Read the light sensors.
    const unsigned long sensorStart = millis();
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
@@ -161,25 +137,45 @@ void loop()
    }
    const unsigned long sensorDuration = millis() - sensorStart;
 
+   if( ( lastServoLoop == 0 ) || ( millis() - lastServoLoop ) > SERVO_LOOP_DELAY )
+   {
+      if( incrementing )
+         demoPulseWidth += 50;
+      else
+         demoPulseWidth -= 50;
+      if( demoPulseWidth > 2500 )
+      {
+         demoPulseWidth = 1500;
+         incrementing = false;
+      }
+      else if( demoPulseWidth < 500 )
+      {
+         demoPulseWidth = 1500;
+         incrementing = true;
+      }
+      demoServoPulseWidth = constrain( demoPulseWidth, SERVO_MIN, SERVO_MAX );
+      lastServoLoop = millis();
+   }
+
    // Sum the top sensors.
-   const long topRow = luxValues[0] + luxValues[1];
+   const long topRowSum = luxValues[0] + luxValues[1];
    // Sum the bottom sensors.
-   const long bottomRow = luxValues[2] + luxValues[3];
+   const long bottomRowSum = luxValues[2] + luxValues[3];
    // Sum the left sensors.
-   const long leftSide = luxValues[0] + luxValues[2];
+   const long leftSideSum = luxValues[0] + luxValues[2];
    // Sum the right sensors.
-   const long rightSide = luxValues[1] + luxValues[3];
+   const long rightSideSum = luxValues[1] + luxValues[3];
 
    // Calculate the difference between the rows and sides.
-   const long rowDelta = topRow - bottomRow;
-   const long sideDelta = leftSide - rightSide;
+   const long rowDelta = topRowSum - bottomRowSum;
+   const long columnDelta = leftSideSum - rightSideSum;
 
    // Constrain the rows and sides, because delta greater than 3k is enough that we should move full speed.
-   const long rowValue = constrain( rowDelta, -3000, 3000 );
-   const long sideValue = constrain( sideDelta, -3000, 3000 );
-   // map( value, fromLow, fromHigh, toLow, toHigh );
-   altitudeSpeed = map( rowValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
-   azimuthSpeed = map( sideValue, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   const long constrainedRowDelta = constrain( rowDelta, -3000, 3000 );
+   const long constrainedColumnDelta = constrain( columnDelta, -3000, 3000 );
+   // Syntax for map: map( value, fromLow, fromHigh, toLow, toHigh );
+   altitudeSpeed = map( constrainedRowDelta, -3000, 3000, SERVO_MIN, SERVO_MAX );
+   azimuthSpeed = map( constrainedColumnDelta, -3000, 3000, SERVO_MIN, SERVO_MAX );
 
    // If the up stop is tripped, prevent the servo from moving upward.
    if( !digitalRead( PORT_B ) )
@@ -246,26 +242,26 @@ void loop()
    if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
    {
       Serial.println( "Readings:" );
-      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[0], luxValues[1], topRow );
-      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[2], luxValues[3], bottomRow );
+      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[0], luxValues[1], topRowSum );
+      Serial.printf( "%5hu + %5hu = %ld\n", luxValues[2], luxValues[3], bottomRowSum );
       Serial.printf( "-----   -----\n" );
-      Serial.printf( "%5ld   %5ld\n", leftSide, rightSide );
+      Serial.printf( "%5ld   %5ld\n", leftSideSum, rightSideSum );
       Serial.println( "" );
       Serial.printf( "azimuthSpeed:  %5hu\n", azimuthSpeed );
       Serial.printf( "altitudeSpeed: %5hu\n", altitudeSpeed );
       Serial.println( "" );
       Serial.printf( "top - bottom: %5ld\n", rowDelta );
-      Serial.printf( "left - right: %5ld\n", sideDelta );
+      Serial.printf( "left - right: %5ld\n", columnDelta );
       if( abs( rowDelta ) > DEAD_BAND )
       {
-         if( topRow > bottomRow )
+         if( topRowSum > bottomRowSum )
             Serial.printf( "Moving altitude servo up.\n" );
          else
             Serial.printf( "Moving altitude servo down.\n" );
       }
-      if( abs( sideDelta ) > DEAD_BAND )
+      if( abs( columnDelta ) > DEAD_BAND )
       {
-         if( leftSide > rightSide )
+         if( leftSideSum > rightSideSum )
             Serial.printf( "Moving azimuth servo left.\n" );
          else
             Serial.printf( "Moving azimuth servo right.\n" );
@@ -277,7 +273,7 @@ void loop()
       if( sensorDuration > 3200 )
          ledColor = RED;
       Serial.print( "Servo 2 pulse width: " );
-      Serial.println( orangeSpeed );
+      Serial.println( demoPulseWidth );
       Serial.println( "---------------------" );
       Serial.println( "" );
 

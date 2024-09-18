@@ -42,7 +42,8 @@ const unsigned long                LOOP_DELAY       = 10;                       
 const unsigned long                PRINT_LOOP_DELAY = 1000;                       // The minimum time between serial printing of the lux values.
 // Variables
 uint16_t                           azimuthSpeed     = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
-uint16_t                           orangeSpeed     = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
+uint16_t                           demoPulseWidth   = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
+uint16_t                           demoServoPulseWidth = 1500;                       // The pulse width of the azimuth servo signal in microseconds.
 uint16_t                           altitudeSpeed    = 1500;                       // The pulse width of the altitude servo signal in microseconds.
 unsigned int                       buttonCount      = 0;                          // Tracks the number of times the ATOM button was pressed.
 unsigned long                      lastLoop         = 0;                          // Tracks the last time the main loop executed.
