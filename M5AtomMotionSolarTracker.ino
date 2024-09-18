@@ -85,7 +85,7 @@ void TaskMotion( void *pvParameters )
 void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
-   M5.begin( true, true, true );
+   M5.begin( true, false, true );
    // AtomMotion.Init() should be called after M5.begin().
    atomMotion.Init();
 
@@ -139,24 +139,24 @@ void loop()
    }
    const unsigned long sensorDuration = millis() - sensorStart;
 
-   if( ( lastServoLoop == 0 ) || ( millis() - lastServoLoop ) > SERVO_LOOP_DELAY )
+   if( ( lastDemoLoop == 0 ) || ( millis() - lastDemoLoop ) > DEMO_LOOP_DELAY )
    {
-      if( incrementing )
+      if( demoIncrementing )
          demoPulseWidth += 50;
       else
          demoPulseWidth -= 50;
       if( demoPulseWidth > 2500 )
       {
          demoPulseWidth = 1500;
-         incrementing = false;
+         demoIncrementing = false;
       }
       else if( demoPulseWidth < 500 )
       {
          demoPulseWidth = 1500;
-         incrementing = true;
+         demoIncrementing = true;
       }
       demoServoPulseWidth = constrain( demoPulseWidth, SERVO_MIN, SERVO_MAX );
-      lastServoLoop = millis();
+      lastDemoLoop = millis();
    }
 
    // Sum the top sensors.
