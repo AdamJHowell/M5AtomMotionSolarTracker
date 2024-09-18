@@ -41,6 +41,8 @@ M5Stack Dlight sensor (https://docs.m5stack.com/en/unit/dlight):
    https://github.com/m5stack/M5-DLight
    Values from 1-65535, greater values represent brighter light.
    This project uses 4 M5Stack DLight sensors connected to the PaHUB2.
+
+M5Stack Unit Limit sensor (https://docs.m5stack.com/en/unit/Unit%20Limit)
 */
 
 

@@ -10,6 +10,7 @@
 #include <M5Atom.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include <cstdint.hpp>
 
 
 // #define PaHUB_I2C_ADDRESS 0x70

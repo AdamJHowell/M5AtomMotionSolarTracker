@@ -24,7 +24,9 @@ include_directories( .
    "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/libraries/Wire/src/"
    "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/libraries/Wire/src/"
    "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/variants/m5stack_atom/"
-   "C:/Users/adam howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/variants/m5stack_atom/"
+   "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/variants/m5stack_atom/"
+   "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/tools/sdk/esp32/include/asio/asio/asio/include/asio/detail/"
+   "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.1/tools/sdk/esp32/include/asio/asio/asio/include/asio/detail/"
 )
 
 add_executable( M5AtomMotionSolarTracker
