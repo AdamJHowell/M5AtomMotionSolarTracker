@@ -86,7 +86,7 @@ void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
    M5.begin( true, false, true );
-   // AtomMotion.Init() should be called after M5.begin().
+   // This Init() should be called after M5.begin().
    atomMotion.Init();
 
    Serial.println( "\nBeginning setup()." );
@@ -103,7 +103,7 @@ void setup()
        nullptr,      // Pointer that will be used as the parameter for the task being created.
        2,            // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
        nullptr,      // Used to pass back a handle by which the created task can be referenced.
-       0 );          // Values 0 or 1 indicate the CPU core which the task will be pinned to.
+       0 );    // Values 0 or 1 indicate the CPU core which the task will be pinned to.
 
    // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
