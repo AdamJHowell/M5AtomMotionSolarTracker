@@ -9,16 +9,13 @@
 #include "AtomMotion.h"
 #include <M5Atom.h>
 #include <Arduino.h>
-#include <Wire.h>
+// #include <Wire.h>
 
-
-// #define PaHUB_I2C_ADDRESS 0x70
-constexpr int PaHUB_I2C_ADDRESS = 0x70;
 
 // Constants
 const int                          SDA_GPIO         = 26;                         // Use this to set the SDA GPIO if your board uses a non-standard GPIOs for the I2C bus.
 const int                          SCL_GPIO         = 32;                         // Use this to set the SCL GPIO if your board uses a non-standard GPIOs for the I2C bus.
-const int                          PCA_ADDRESS      = 0x70;                       // The I2C address of the Pa.HUB.
+const int                          PaHUB2_ADDRESS   = 0x70;                       // The I2C address of the Pa.HUB.
 const long                         RED              = 0xFF0000;                   // The RGB code for the color red.
 const long                         ORANGE           = 0xFF8000;                   // The RGB code for the color orange.
 const long                         YELLOW           = 0xFFFF00;                   // The RGB code for the color yellow.
@@ -60,6 +57,10 @@ const unsigned int                 DEMO_LOOP_DELAY     = 100;
 unsigned long                      lastDemoLoop        = 0;
 bool                               demoIncrementing    = false;
 
+// Set up a default "Wire" for M5Atom.cpp to use.
+// TwoWire Wire = TwoWire( 0 );
+// Set up a custom I2C Wire class on PORT.A for the PaHUB2 to use.
+TwoWire LightWire = TwoWire( 1 );
 
 void channelSelect( uint8_t i );
 

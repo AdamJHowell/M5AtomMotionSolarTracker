@@ -56,9 +56,9 @@ void channelSelect( const uint8_t i )
 {
    if( i > 7 )
       return;
-   Wire.beginTransmission( PCA_ADDRESS );
-   Wire.write( 1 << i );
-   Wire.endTransmission();
+   LightWire.beginTransmission( PaHUB2_ADDRESS );
+   LightWire.write( 1 << i );
+   LightWire.endTransmission();
 } // End of channelSelect()
 
 
@@ -88,6 +88,8 @@ void setup()
    M5.begin( true, true, true );
    // This Init() should be called after M5.begin().
    atomMotion.Init();
+   // Set up LightWire to use the PORT.A GPIOs.
+   LightWire.begin( 26, 32, 100000UL );
 
    Serial.println( "\nBeginning setup()." );
 
