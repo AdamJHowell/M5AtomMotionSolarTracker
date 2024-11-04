@@ -85,13 +85,16 @@ void TaskMotion( void *pvParameters )
 void setup()
 {
    // M5.begin( SerialEnable, I2CEnable, DisplayEnable ) should happen before AtomMotion.Init() is called.
-   M5.begin( true, true, true );
-   // This Init() should be called after M5.begin().
-   atomMotion.Init();
-   // Set up LightWire to use the PORT.A GPIOs.
-   LightWire.begin( 26, 32, 100000UL );
+   M5.begin( true, false, true );
 
    Serial.println( "\nBeginning setup()." );
+
+   // This Init() should be called after M5.begin().
+   atomMotion.Init();
+   // Set up the default I2C bus.
+   Wire.begin( 25, 21 );
+   // Set up LightWire to use the PORT.A GPIOs.
+   LightWire.begin( 26, 32, 100000UL );
 
    // Establish the two ports as inputs.
    pinMode( PORT_B, INPUT_PULLUP );
@@ -110,15 +113,11 @@ void setup()
    // Turn on the LED and set it to white.
    M5.dis.drawpix( 0, WHITE );
 
-   sensorAddresses[0] = 0;
-   sensorAddresses[1] = 1;
-   sensorAddresses[2] = 4;
-   sensorAddresses[3] = 5;
    // Configure every M5Stack DLIGHT sensor.
    for( uint8_t i = 0; i < NUM_SENSORS; i++ )
    {
       channelSelect( sensorAddresses[i] );
-      sensorArray[i].begin();
+      sensorArray[i].begin( &LightWire );
       sensorArray[i].setMode( CONTINUOUSLY_H_RESOLUTION_MODE );
    }
 
