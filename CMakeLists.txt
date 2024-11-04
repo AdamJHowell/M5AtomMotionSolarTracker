@@ -22,6 +22,7 @@ include_directories( .
    "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/cores/esp32/"
    "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/cores/esp32/"
    "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/libraries/Wire/src/"
+   "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/libraries/Wire/src/"
    "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/libraries/Wire/src/"
    "C:/Users/adam.howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/variants/m5stack_atom/"
    "C:/Users/Adam Howell/AppData/Local/Arduino15/packages/m5stack/hardware/esp32/2.1.2/variants/m5stack_atom/"
