@@ -9,7 +9,6 @@
 #include "AtomMotion.h"
 #include <M5Atom.h>
 #include <Arduino.h>
-// #include <Wire.h>
 
 
 // Constants
@@ -50,15 +49,6 @@ uint8_t                sensorAddresses[NUM_SENSORS] = { 0, 1, 4, 5 };           
 AtomMotion                         atomMotion;                                    // An object to manage the ATOM Motion.
 M5_DLight                  sensorArray[NUM_SENSORS] = {};                         // An array of DLIGHT sensor objects.
 
-// Variables for the servo demo code.
-uint16_t                           demoPulseWidth      = 1500;
-uint16_t                           demoServoPulseWidth = 1500;
-const unsigned int                 DEMO_LOOP_DELAY     = 100;
-unsigned long                      lastDemoLoop        = 0;
-bool                               demoIncrementing    = false;
-
-// Set up a default "Wire" for M5Atom.cpp to use.
-// TwoWire Wire = TwoWire( 0 );
 // Set up a custom I2C Wire class on PORT.A for the PaHUB2 to use.
 TwoWire LightWire = TwoWire( 1 );
 
