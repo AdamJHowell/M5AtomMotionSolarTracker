@@ -74,8 +74,6 @@ void TaskMotion( void *pvParameters )
       M5.dis.drawpix( 0, ledColor );
       atomMotion.SetServoPulse( AZIMUTH_SERVO, azimuthSpeed );
       atomMotion.SetServoPulse( ALTITUDE_SERVO, altitudeSpeed );
-      atomMotion.SetServoPulse( 1, demoServoPulseWidth );
-      atomMotion.SetServoPulse( 2, demoServoPulseWidth );
       // Give other threads a chance to take control of the core.
       vTaskDelay( 0 );
    }
@@ -140,26 +138,6 @@ void loop()
    }
    const unsigned long sensorDuration = millis() - sensorStart;
 
-   if( ( lastDemoLoop == 0 ) || ( millis() - lastDemoLoop ) > DEMO_LOOP_DELAY )
-   {
-      if( demoIncrementing )
-         demoPulseWidth += 50;
-      else
-         demoPulseWidth -= 50;
-      if( demoPulseWidth > 2500 )
-      {
-         demoPulseWidth = 1500;
-         demoIncrementing = false;
-      }
-      else if( demoPulseWidth < 500 )
-      {
-         demoPulseWidth = 1500;
-         demoIncrementing = true;
-      }
-      demoServoPulseWidth = constrain( demoPulseWidth, SERVO_MIN, SERVO_MAX );
-      lastDemoLoop = millis();
-   }
-
    // Sum the top sensors.
    const long topRowSum = luxValues[0] + luxValues[1];
    // Sum the bottom sensors.
@@ -171,7 +149,7 @@ void loop()
 
    // Calculate the difference between the rows and sides.
    const long rowDelta = topRowSum - bottomRowSum;
-   const long columnDelta = leftSideSum - rightSideSum;
+   const long columnDelta = rightSideSum - leftSideSum;
 
    // Constrain the rows and sides, because delta greater than 3k is enough that we should move full speed.
    const long constrainedRowDelta = constrain( rowDelta, -3000, 3000 );
@@ -183,7 +161,7 @@ void loop()
    // If the up stop is tripped, prevent the servo from moving upward.
    if( !digitalRead( PORT_B ) )
    {
-      altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
+      altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
       ledColor = GREEN;
       Serial.printf( "-- Hit limit B up stop!\n" );
    }
@@ -191,7 +169,7 @@ void loop()
    // If the down stop is tripped, prevent the servo from moving downward.
    if( !digitalRead( PORT_C ) )
    {
-      altitudeSpeed = constrain( altitudeSpeed, 500, 1500 );
+      altitudeSpeed = constrain( altitudeSpeed, 1500, 2500 );
       ledColor = BLUE;
       Serial.printf( "-- Hit limit C down stop!\n" );
    }
@@ -204,7 +182,7 @@ void loop()
    // if( abs( sideDelta ) <= DEAD_BAND )
    //    azimuthSpeed = 1500;
 
-   if( ( lastLoop == 0 ) || ( millis() - lastLoop ) > LOOP_DELAY )
+   if( lastLoop == 0 || millis() - lastLoop > LOOP_DELAY )
    {
       if( M5.Btn.lastChange() > lastLoop )
       {
@@ -242,7 +220,7 @@ void loop()
       lastLoop = millis();
    }
 
-   if( ( lastPrintLoop == 0 ) || ( millis() - lastPrintLoop ) > PRINT_LOOP_DELAY )
+   if( lastPrintLoop == 0 || millis() - lastPrintLoop > PRINT_LOOP_DELAY )
    {
       Serial.println( "Readings:" );
       Serial.printf( "%5hu + %5hu = %ld\n", luxValues[0], luxValues[1], topRowSum );
@@ -275,11 +253,8 @@ void loop()
       Serial.println( " (ms)" );
       if( sensorDuration > 3200 )
          ledColor = RED;
-      Serial.print( "Servo 2 pulse width: " );
-      Serial.println( demoPulseWidth );
-      Serial.println( "---------------------" );
-      Serial.println( "" );
 
+      Serial.println( "\n------------------------\n" );
       lastPrintLoop = millis();
    }
 } // End of loop()
