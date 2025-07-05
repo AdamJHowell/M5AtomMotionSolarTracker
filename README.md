@@ -79,3 +79,5 @@ It may be required to call M5.begin() before atomMotion.Init()
 * This project uses 4 M5Stack DLight sensors connected to the PaHUB2.
 
 [M5Stack Unit Limit sensor](https://docs.m5stack.com/en/unit/Unit%20Limit)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/adamjhowell/m5atommotionsolartracker/badge)](https://www.codefactor.io/repository/github/adamjhowell/m5atommotionsolartracker)
