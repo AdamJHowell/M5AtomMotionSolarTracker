@@ -2,7 +2,9 @@
 
 A program which uses the ATOM Motion to track the sun (or other light sources).
 
-The solar tracker will be constructed using Lego bricks where possible.
+The solar tracker has been constructed using Lego bricks as much as possible.
+
+[Video of a 180° test](https://youtu.be/hLKWgHJy7dI?si=iLeojT3ccEKPgPSL)
 
 ### Hardware:
 * A plethora of Lego Technic pieces
